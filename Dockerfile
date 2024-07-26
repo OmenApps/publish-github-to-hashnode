@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-COPY . .
-RUN pip install -r requirements.txt
+RUN python3 -m pip install --no-cache-dir requests python-frontmatter pathlib
 
-ENTRYPOINT ["python", "/publish_to_hashnode.py"]
+COPY entrypoint.py /entrypoint.py
+ENTRYPOINT ["python", "/entrypoint.py"]
