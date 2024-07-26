@@ -9,6 +9,9 @@ inputs:
   access-token:
     description: "Your Hashnode API Personal Access Token. See: https://hashnode.com/settings/developer"
     required: true
+  changed-files:
+    description: "The list of changed files in the repository."
+    required: true
   publication-host:
     description: "The publication host (e.g., blog.mydomain.com)."
     required: true
@@ -30,7 +33,7 @@ runs:
     ACCESS_TOKEN: ${{ inputs.access-token }}
     POSTS_DIRECTORY: ${{ inputs.posts-directory }}
     PUBLICATION_HOST: ${{ inputs.publication-host }}
-    CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+    CHANGED_FILES: ${{ inputs.changed-files }}
   args:
     - ${{ inputs.access-token }}
     - ${{ inputs.posts-directory }}

@@ -12,8 +12,9 @@ This GitHub Action publishes blog posts from a GitHub repository to a specific p
 ## Inputs
 
 - `access-token` (required): Your Hashnode API Personal Access Token. See: [Hashnode Developer Settings](https://hashnode.com/settings/developer)
-- `posts-directory` (optional): The local directory containing the blog posts, if different from the root directory. Default: `posts`
+- `changed-files` (required): The list of changed files in the repository, provided by the `tj-actions/changed-files` action.
 - `publication-host` (required): The publication host (e.g., `blog.mydomain.com`).
+- `posts-directory` (optional): The local directory containing the blog posts, if different from the root directory. Default: `posts`
 
 ## Outputs
 
@@ -35,24 +36,27 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+        - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
-    - uses: tj-actions/changed-files@v44
+        - name: Get changed files
+          id: changed-files
+          uses: tj-actions/changed-files@v44
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.x'
+        - uses: actions/setup-python@v5
+          with:
+            python-version: '3.x'
 
-    - run: pip install -r requirements.txt
+        - run: pip install -r requirements.txt
 
-    - name: Publish to Hashnode
-      uses: actions/publish-github-to-hashnode@v1
-      with:
-        access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
-        posts-directory: 'content/posts'  # The directory within your repository containing the markdown files, if different from the root directory
-        publication-host: 'blog.mydomain.com'  # Your publication host
+        - name: Publish to Hashnode
+          uses: actions/publish-github-to-hashnode@v1
+          with:
+            access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
+            changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
+            publication-host: 'blog.mydomain.com'  # Your publication host
+            posts-directory: 'content/posts'  # The directory within your repository containing the markdown files, if different from the root directory
 ```
 
 ### 2. Store your Hashnode API Access Token as a GitHub Secret
@@ -131,29 +135,31 @@ jobs:
     publish:
       runs-on: ubuntu-latest
       steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
 
-      - uses: tj-actions/changed-files@v44
-    
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-    
-      - run: pip install -r requirements.txt
-    
-      - name: Publish to Hashnode
-        id: publish
-        uses: actions/publish-github-to-hashnode@v1
-        with:
-          access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
-          posts-directory: 'content/posts'
-          publication-host: 'blog.mydomain.com'
-    
-      - name: Get the output JSON
-        run: |
-        echo "${{ steps.publish.outputs.result_json }}"
+        - name: Get changed files
+          id: changed-files
+          uses: tj-actions/changed-files@v44
+        
+        - uses: actions/setup-python@v5
+          with:
+            python-version: '3.x'
+        
+        - run: pip install -r requirements.txt
+        
+        - name: Publish to Hashnode
+          id: publish
+          uses: actions/publish-github-to-hashnode@v1
+          with:
+            access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
+            changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
+            publication-host: 'blog.mydomain.com'
+            posts-directory: 'content/posts'
+        
+        - name: Get the output JSON
+          run: echo "${{ steps.publish.outputs.result_json }}"
 ```
 
 ## Development
