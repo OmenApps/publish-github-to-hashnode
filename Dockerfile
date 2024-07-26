@@ -1,10 +1,6 @@
 FROM python:3.12-slim
 
-WORKDIR /app
-
-COPY requirements.txt requirements.txt
+COPY . .
 RUN pip install -r requirements.txt
 
-COPY . .
-
-ENTRYPOINT ["python", "/app/publish_to_hashnode.py"]
+ENTRYPOINT ["python", "/publish_to_hashnode.py"]
