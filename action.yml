@@ -1,0 +1,37 @@
+name: "publish-github-to-hashnode"
+author: "Jack Linke"
+description: "Publish Posts from a GitHub repository to a Hashnode Publication."
+branding:
+  icon: "edit-3"
+  color: "green"
+
+inputs:
+  access-token:
+    description: "Your Hashnode API Personal Access Token. See: https://hashnode.com/settings/developer"
+    required: true
+  publication-host:
+    description: "The publication host (e.g., blog.mydomain.com)."
+    required: true
+  posts-directory:
+    description: "The local directory containing the blog posts, if different from the root directory."
+    required: false
+    default: "posts"
+
+outputs:
+  result_json:
+    description: "Publish result as a JSON string"
+  result_summary:
+    description: "Publish result summary formatted as text"
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    ACCESS_TOKEN: ${{ inputs.access-token }}
+    POSTS_DIRECTORY: ${{ inputs.posts-directory }}
+    PUBLICATION_HOST: ${{ inputs.publication-host }}
+    CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+  args:
+    - ${{ inputs.access-token }}
+    - ${{ inputs.posts-directory }}
+    - ${{ inputs.publication-host }}
