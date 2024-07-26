@@ -48,8 +48,6 @@ jobs:
           with:
             python-version: '3.x'
 
-        - run: pip install -r requirements.txt
-
         - name: Publish to Hashnode
           uses: actions/publish-github-to-hashnode@v1
           with:
@@ -146,9 +144,7 @@ jobs:
         - uses: actions/setup-python@v5
           with:
             python-version: '3.x'
-        
-        - run: pip install -r requirements.txt
-        
+                
         - name: Publish to Hashnode
           id: publish
           uses: actions/publish-github-to-hashnode@v1
