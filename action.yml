@@ -12,6 +12,9 @@ inputs:
   changed-files:
     description: "The list of changed files in the repository."
     required: true
+  deleted-files:
+    description: "The list of deleted files in the repository."
+    required: true
   publication-host:
     description: "The publication host (e.g., blog.mydomain.com)."
     required: true
@@ -34,6 +37,7 @@ runs:
     POSTS_DIRECTORY: ${{ inputs.posts-directory }}
     PUBLICATION_HOST: ${{ inputs.publication-host }}
     CHANGED_FILES: ${{ inputs.changed-files }}
+    DELETED_FILES: ${{ inputs.deleted-files }}
   args:
     - ${{ inputs.access-token }}
     - ${{ inputs.posts-directory }}

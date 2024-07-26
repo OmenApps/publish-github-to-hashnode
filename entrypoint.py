@@ -244,19 +244,23 @@ def main():
     posts_directory = Path(os.environ.get("POSTS_DIRECTORY", ""))
     publication_host = os.environ["PUBLICATION_HOST"]
 
-    changed_files = json.loads(os.environ["CHANGED_FILES"] or "{}")
+    changed_files_str = os.environ.get("CHANGED_FILES", "")
+    deleted_files_str = os.environ.get("DELETED_FILES", "")
+
+    changed_files = changed_files_str.split() if changed_files_str else []
+    deleted_files = deleted_files_str.split() if deleted_files_str else []
+
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["GITHUB_REF"].split("/")[-1]
-    added_files = [Path(f) for f in changed_files.get("added_files", [])]
-    modified_files = [Path(f) for f in changed_files.get("modified_files", [])]
-    deleted_files = [Path(f) for f in changed_files.get("deleted_files", [])]
+    added_files = [Path(f) for f in changed_files if f]
+    deleted_files = [Path(f) for f in deleted_files if f]
 
     headers = {"Authorization": f"Bearer {access_token}"}
     publication_id = get_publication_id(publication_host, headers)
 
     results = {"added": [], "modified": [], "deleted": []}
 
-    for file_path in added_files + modified_files:
+    for file_path in added_files:
         if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
             handle_post(file_path, file_path.parent, repo, branch, publication_id, headers, results, added_files)
 
@@ -266,6 +270,6 @@ def main():
 
     write_results_to_github_output(results)
 
-
 if __name__ == "__main__":
     main()
+
