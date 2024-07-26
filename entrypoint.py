@@ -244,7 +244,7 @@ def main():
     posts_directory = Path(os.environ.get("POSTS_DIRECTORY", ""))
     publication_host = os.environ["PUBLICATION_HOST"]
 
-    changed_files = json.loads(os.environ["CHANGED_FILES"])
+    changed_files = json.loads(os.environ["CHANGED_FILES"] or "{}")
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["GITHUB_REF"].split("/")[-1]
     added_files = [Path(f) for f in changed_files.get("added_files", [])]
