@@ -232,6 +232,17 @@ def handle_deleted_post(
     return results
 
 
+def create_result_summary(results: Dict[str, List[Dict[str, str]]]) -> str:
+    """Create a summary of the results."""
+    summary = ""
+    for action, posts in results.items():
+        if posts:
+            summary += f"{action.capitalize()} posts:\n"
+            for post in posts:
+                summary += f"  - {post['title']} ({post['slug']})\n"
+    return summary
+
+
 def write_results_to_github_output(results: Dict[str, List[Dict[str, str]]]) -> None:
     """Write the results to the GitHub output in two different formats."""
     github_output = os.getenv("GITHUB_OUTPUT")
@@ -239,8 +250,10 @@ def write_results_to_github_output(results: Dict[str, List[Dict[str, str]]]) -> 
         print("GITHUB_OUTPUT environment variable is not set.")
         return
     with open(github_output, "a", encoding="utf-8") as output_file:
-        print(f"result_json={json.dumps(results)}", file=output_file)
-        print(f"result_summary={json.dumps(results, indent=2)}", file=output_file)
+        # print(f"result_json={json.dumps(results)}", file=output_file)
+        # print(f"result_summary={create_result_summary(results)}", file=output_file)
+        print("result_json=result_json", file=output_file)
+        print("result_summary=result_summary", file=output_file)
 
 
 def main():
