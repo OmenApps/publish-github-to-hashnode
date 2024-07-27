@@ -222,13 +222,16 @@ def handle_deleted_post(
     file_path: Path, publication_id: str, headers: Dict[str, str], results: Dict[str, List[Dict[str, str]]]
 ) -> None:
     """Handle a deleted markdown post file."""
-    metadata, _ = process_markdown(file_path)
-    validate_frontmatter(metadata)
-    post_id = get_post_id(publication_id, metadata["slug"], headers)
-    if post_id:
-        success = delete_post(post_id, headers)
-        if success:
-            results["deleted"].append({"slug": metadata["slug"]})
+    # ToDo: To implement this, we need to get the metadata from this file in the previous commit.abs
+    # We can use the GitHub API to get the previous commit and then get the file content.
+    # --GET FILE HERE--
+    # metadata, _ = process_markdown(file_path)
+    # validate_frontmatter(metadata)
+    # post_id = get_post_id(publication_id, metadata["slug"], headers)
+    # if post_id:
+    #     success = delete_post(post_id, headers)
+    #     if success:
+    #         results["deleted"].append({"slug": metadata["slug"]})
     return results
 
 
@@ -280,9 +283,10 @@ def main():
                 file_path, file_path.parent, repo, branch, publication_id, headers, results, added_files
             )
 
-    for file_path in deleted_files:
-        if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
-            results = handle_deleted_post(file_path, publication_id, headers, results)
+    # ToDo: To implement this, we need to get the metadata from this file in the previous commit.
+    # for file_path in deleted_files:
+    #     if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
+    #         results = handle_deleted_post(file_path, publication_id, headers, results)
 
     write_results_to_github_output(results)
 
