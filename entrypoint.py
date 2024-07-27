@@ -24,9 +24,10 @@ import json
 import os
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
+from zoneinfo import ZoneInfo
 
 import frontmatter
 import requests
@@ -86,8 +87,8 @@ def get_post_id(host: str, slug: str, headers: Dict[str, str]) -> Optional[str]:
     return post_id
 
 
-def create_or_update_post(post_data: Dict[str, Any], headers: Dict[str, str]) -> Dict[str, str]:
-    """Create or update a post with the given data."""
+def create_post(post_data: Dict[str, Any], headers: Dict[str, str]) -> Dict[str, str]:
+    """Create a post with the given data."""
     mutation = """
     mutation PublishPost($input: PublishPostInput!) {
         publishPost(input: $input) {
@@ -107,7 +108,32 @@ def create_or_update_post(post_data: Dict[str, Any], headers: Dict[str, str]) ->
     )
     response.raise_for_status()
     response_json = response.json()["data"]["publishPost"]["post"]
-    debug_data.append(f"Created or Updated Initial Post Data: {post_data}, Created or Updated Post: {response_json}")
+    debug_data.append(f"Created Initial Post Data: {post_data}, Created Post: {response_json}")
+    return response_json
+
+
+def update_post(post_data: Dict[str, Any], headers: Dict[str, str]) -> Dict[str, str]:
+    """Update a post with the given data."""
+    mutation = """
+    mutation UpdatePost($input: UpdatePostInput!) {
+        updatePost(input: $input) {
+            post {
+                id
+                title
+                slug
+            }
+        }
+    }
+    """
+    response = requests.post(
+        HASHNODE_API_URL,
+        json={"query": mutation, "variables": {"input": post_data}},
+        headers=headers,
+        timeout=TIMEOUT,
+    )
+    response.raise_for_status()
+    response_json = response.json()["data"]["updatePost"]["post"]
+    debug_data.append(f"Updated Initial Post Data: {post_data}, Updated Post: {response_json}")
     return response_json
 
 
@@ -163,7 +189,8 @@ def get_validated_frontmatter(metadata: Dict[str, Any]) -> None:
 
     # Set default publish date
     if "publishedAt" not in metadata:
-        metadata["publishedAt"] = datetime.now().isoformat()
+        current_dt = datetime.now(ZoneInfo('UTC'))
+        metadata["publishedAt"] = current_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     debug_data.append(f"Validated Frontmatter: {metadata}")
     return metadata
@@ -237,15 +264,19 @@ def handle_post(  # pylint: disable=too-many-arguments
         "tags": metadata["tags"],
         "settings": {"enableTableOfContent": metadata.get("enableTableOfContents", False), "slugOverridden": True},
     }
+    debug_data.append(f"Post Data before create or update: {post_data}")
 
     post_id = get_post_id(host, metadata["slug"], headers)
     if post_id:
         post_data["id"] = post_id
-    debug_data.append(f"Updating Post with id: {post_id}, Post Data: {post_data}")
+        post = update_post(post_data, headers)
+        results["modified"].append(post)
+        debug_data.append(f"Updated Post with id: {post_id}, Post Data: {post_data}")
+    else:
+        post = create_post(post_data, headers)
+        results["added"].append(post)
+        debug_data.append(f"Created Post with id: {post_id}, Post Data: {post_data}")
 
-    post = create_or_update_post(post_data, headers)
-    results["added" if file_path in added_files else "modified"].append(post)
-    debug_data.append(f"Updated Post with id: {post_id}, Post Data: {post_data}")
     return results
 
 
