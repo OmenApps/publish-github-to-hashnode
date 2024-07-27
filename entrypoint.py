@@ -364,15 +364,15 @@ def main():
     added_files = os.environ.get("ADDED_FILES", "").split()
     added_files = [Path(f) for f in added_files if f]
 
-    changed_and_modified_files = os.environ.get("CHANGED_AND_MODIFIED_FILES", "").split()
-    changed_and_modified_files = [Path(f) for f in changed_and_modified_files if f and f not in added_files]
+    changed_files = os.environ.get("CHANGED_FILES", "").split()
+    changed_files = [Path(f) for f in changed_files if f and f not in added_files]
 
     deleted_files = os.environ.get("DELETED_FILES", "").split()
     deleted_files = [Path(f) for f in deleted_files if f]
 
     results = {
         "input_added_files": [str(f) for f in added_files],
-        "input_changed_and_modified_files": [str(f) for f in changed_and_modified_files],
+        "input_files": [str(f) for f in changed_files],
         "input_deleted_files": [str(f) for f in deleted_files],
         "added": [],
         "modified": [],
@@ -380,7 +380,7 @@ def main():
         "errors": [],
     }
 
-    all_changed_files = added_files + changed_and_modified_files
+    all_changed_files = added_files + changed_files
     for file_path in all_changed_files:
         debug_data.append(f"Processing File: {str(file_path)}, Comparing to path {str(posts_directory)}")
         if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":

@@ -9,8 +9,8 @@ inputs:
   added-files:
     description: "The list of added files in the repository."
     required: true
-  changed-and-modified-files:
-    description: "The list of changed or modified files in the repository."
+  changed-files:
+    description: "The list of changed files in the repository."
     required: true
   deleted-files:
     description: "The list of deleted files in the repository."
@@ -39,7 +39,7 @@ runs:
     POSTS_DIRECTORY: ${{ inputs.posts-directory }}
     PUBLICATION_HOST: ${{ inputs.publication-host }}
     ADDED_FILES: ${{ inputs.added-files }}
-    CHANGED_AND_MODIFIED_FILES: ${{ inputs.changed-and-modified-files }}
+    CHANGED_FILES: ${{ inputs.changed-files }}
     DELETED_FILES: ${{ inputs.deleted-files }}
     PYTHONUNBUFFERED: "1"
   args:
@@ -47,5 +47,5 @@ runs:
     - ${{ inputs.posts-directory }}
     - ${{ inputs.publication-host }}
     - ${{ inputs.added-files }}
-    - ${{ inputs.changed-and-modified-files }}
+    - ${{ inputs.changed-files }}
     - ${{ inputs.deleted-files }}
