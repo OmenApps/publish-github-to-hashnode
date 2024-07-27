@@ -263,8 +263,8 @@ def main():
     publication_host = os.environ["PUBLICATION_HOST"]
 
     # Convert the space-separated strings to lists
-    changed_files = os.environ.get("CHANGED_FILES", "").split("")
-    deleted_files = os.environ.get("DELETED_FILES", "").split("")
+    changed_files = os.environ.get("CHANGED_FILES", "").split()
+    deleted_files = os.environ.get("DELETED_FILES", "").split()
 
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["GITHUB_REF"].split("/")[-1]
