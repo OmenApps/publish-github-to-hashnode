@@ -245,11 +245,19 @@ def handle_deleted_post(
 def create_result_summary(results: Dict[str, List[Dict[str, str]]]) -> str:
     """Create a summary of the results."""
     summary = ""
+
+    # Add added, modified, and deleted posts
     for action, posts in results.items():
-        if posts:
+        if action in ["added", "modified", "deleted"] and posts:
             summary += f"{action.capitalize()} posts:\n"
             for post in posts:
                 summary += f"  - {post['title']} ({post['slug']})\n"
+
+    # Add errors
+    if results["errors"]:
+        summary += "Errors:\n"
+        for error in results["errors"]:
+            summary += f"  - {error['file']}: {error['error']}\n"
     return summary
 
 
