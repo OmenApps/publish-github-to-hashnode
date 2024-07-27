@@ -235,6 +235,9 @@ def handle_deleted_post(
 def write_results_to_github_output(results: Dict[str, List[Dict[str, str]]]) -> None:
     """Write the results to the GitHub output in two different formats."""
     github_output = os.getenv("GITHUB_OUTPUT")
+    if not github_output:
+        print("GITHUB_OUTPUT environment variable is not set.")
+        return
     with open(github_output, "a", encoding="utf-8") as output_file:
         print(f"result_json={json.dumps(results)}", file=output_file)
         print(f"result_summary={json.dumps(results, indent=2)}", file=output_file)
@@ -246,11 +249,11 @@ def main():
     posts_directory = Path(os.environ.get("POSTS_DIRECTORY", ""))
     publication_host = os.environ["PUBLICATION_HOST"]
 
-    changed_files_str = os.environ.get("CHANGED_FILES", "")
-    deleted_files_str = os.environ.get("DELETED_FILES", "")
+    changed_files_str = os.environ.get("CHANGED_FILES", "[]")
+    deleted_files_str = os.environ.get("DELETED_FILES", "[]")
 
-    changed_files = changed_files_str.split() if changed_files_str else []
-    deleted_files = deleted_files_str.split() if deleted_files_str else []
+    changed_files = json.loads(changed_files_str)
+    deleted_files = json.loads(deleted_files_str)
 
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["GITHUB_REF"].split("/")[-1]

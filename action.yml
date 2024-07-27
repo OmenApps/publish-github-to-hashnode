@@ -38,6 +38,7 @@ runs:
     PUBLICATION_HOST: ${{ inputs.publication-host }}
     CHANGED_FILES: ${{ inputs.changed-files }}
     DELETED_FILES: ${{ inputs.deleted-files }}
+    PYTHONUNBUFFERED: "1"
   args:
     - ${{ inputs.access-token }}
     - ${{ inputs.posts-directory }}
