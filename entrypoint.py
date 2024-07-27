@@ -277,17 +277,17 @@ def main():
 
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["GITHUB_REF"].split("/")[-1]
-    added_files = [str(Path(f)) for f in added_files if f]
-    changed_and_modified_files = [str(Path(f)) for f in changed_and_modified_files if f]
-    deleted_files = [str(Path(f)) for f in deleted_files if f]
+    added_files = [Path(f) for f in added_files if f]
+    changed_and_modified_files = [Path(f) for f in changed_and_modified_files if f]
+    deleted_files = [Path(f) for f in deleted_files if f]
 
     headers = {"Authorization": f"Bearer {access_token}"}
     publication_id = get_publication_id(publication_host, headers)
 
     results = {
-        "input_added_files": added_files,
-        "input_changed_and_modified_files": changed_and_modified_files,
-        "input_deleted_files": deleted_files,
+        "input_added_files": [str(f) for f in added_files],
+        "input_changed_and_modified_files": [str(f) for f in changed_and_modified_files],
+        "input_deleted_files": [str(f) for f in deleted_files],
         "added": [],
         "modified": [],
         "deleted": [],
