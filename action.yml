@@ -42,3 +42,5 @@ runs:
     - ${{ inputs.access-token }}
     - ${{ inputs.posts-directory }}
     - ${{ inputs.publication-host }}
+    - ${{ inputs.changed-files }}
+    - ${{ inputs.deleted-files }}
