@@ -249,11 +249,9 @@ def main():
     posts_directory = Path(os.environ.get("POSTS_DIRECTORY", ""))
     publication_host = os.environ["PUBLICATION_HOST"]
 
-    changed_files_str = os.environ.get("CHANGED_FILES", "[]")
-    deleted_files_str = os.environ.get("DELETED_FILES", "[]")
-
-    changed_files = json.loads(changed_files_str)
-    deleted_files = json.loads(deleted_files_str)
+    # Convert the space-separated strings to lists
+    changed_files = os.environ.get("CHANGED_FILES", "").split("")
+    deleted_files = os.environ.get("DELETED_FILES", "").split("")
 
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["GITHUB_REF"].split("/")[-1]
