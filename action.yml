@@ -24,7 +24,6 @@ inputs:
   posts-directory:
     description: "The local directory containing the blog posts, if different from the root directory."
     required: false
-    default: "posts"
 
 outputs:
   result_json:
