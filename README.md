@@ -51,8 +51,10 @@ jobs:
         - name: Publish to Hashnode
           uses: actions/publish-github-to-hashnode@v1
           with:
+            added-files: ${{ steps.changed-files.outputs.added_files }}
+            changed-and-modified-files: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
+            deleted-files: ${{ steps.changed-files.outputs.deleted_files }}
             access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
-            changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
             publication-host: 'blog.mydomain.com'  # Your publication host
             posts-directory: 'content/posts'  # The directory within your repository containing the markdown files, if different from the root directory
 ```
@@ -149,8 +151,10 @@ jobs:
           id: publish
           uses: actions/publish-github-to-hashnode@v1
           with:
+            added-files: ${{ steps.changed-files.outputs.added_files }}
+            changed-and-modified-files: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
+            deleted-files: ${{ steps.changed-files.outputs.deleted_files }}
             access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
-            changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
             publication-host: 'blog.mydomain.com'
             posts-directory: 'content/posts'
         

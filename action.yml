@@ -6,14 +6,17 @@ branding:
   color: "green"
 
 inputs:
-  access-token:
-    description: "Your Hashnode API Personal Access Token. See: https://hashnode.com/settings/developer"
+  added-files:
+    description: "The list of added files in the repository."
     required: true
-  changed-files:
-    description: "The list of changed files in the repository."
+  changed-and-modified-files:
+    description: "The list of changed or modified files in the repository."
     required: true
   deleted-files:
     description: "The list of deleted files in the repository."
+    required: true
+  access-token:
+    description: "Your Hashnode API Personal Access Token. See: https://hashnode.com/settings/developer"
     required: true
   publication-host:
     description: "The publication host (e.g., blog.mydomain.com)."
@@ -36,12 +39,14 @@ runs:
     ACCESS_TOKEN: ${{ inputs.access-token }}
     POSTS_DIRECTORY: ${{ inputs.posts-directory }}
     PUBLICATION_HOST: ${{ inputs.publication-host }}
-    CHANGED_FILES: ${{ inputs.changed-files }}
+    ADDED_FILES: ${{ inputs.added-files }}
+    CHANGED_AND_MODIFIED_FILES: ${{ inputs.changed-and-modified-files }}
     DELETED_FILES: ${{ inputs.deleted-files }}
     PYTHONUNBUFFERED: "1"
   args:
     - ${{ inputs.access-token }}
     - ${{ inputs.posts-directory }}
     - ${{ inputs.publication-host }}
-    - ${{ inputs.changed-files }}
+    - ${{ inputs.added-files }}
+    - ${{ inputs.changed-and-modified-files }}
     - ${{ inputs.deleted-files }}

@@ -128,7 +128,7 @@ def process_markdown(file_path: Path) -> Tuple[Dict[str, Any], str]:
     return post.metadata, post.content
 
 
-def validate_frontmatter(metadata: Dict[str, Any]) -> None:
+def get_validated_frontmatter(metadata: Dict[str, Any]) -> None:
     """Validate that the frontmatter contains the required fields."""
     required_fields = ["title"]
     for field in required_fields:
@@ -151,6 +151,8 @@ def validate_frontmatter(metadata: Dict[str, Any]) -> None:
     # Set default publish date
     if "publishedAt" not in metadata:
         metadata["publishedAt"] = datetime.now().isoformat()
+
+    return metadata
 
 
 def convert_path_to_posix(path: Union[str, Path]) -> str:
@@ -185,7 +187,12 @@ def handle_post(  # pylint: disable=too-many-arguments
 ) -> None:
     """Handle a markdown post file."""
     metadata, content = process_markdown(file_path)
-    validate_frontmatter(metadata)
+
+    try:
+        metadata = get_validated_frontmatter(metadata)
+    except ValueError as e:
+        results["errors"].append({"file": file_path, "error": str(e)})
+        return results
 
     content = update_image_urls(content, base_path, repo, branch)
 
@@ -264,20 +271,31 @@ def main():
     publication_host = os.environ["PUBLICATION_HOST"]
 
     # Convert the space-separated strings to lists
-    changed_files = os.environ.get("CHANGED_FILES", "").split()
+    added_files = os.environ.get("ADDED_FILES", "").split()
+    changed_and_modified_files = os.environ.get("CHANGED_AND_MODIFIED_FILES", "").split()
     deleted_files = os.environ.get("DELETED_FILES", "").split()
 
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["GITHUB_REF"].split("/")[-1]
-    added_files = [Path(f) for f in changed_files if f]
+    added_files = [Path(f) for f in added_files if f]
+    changed_and_modified_files = [Path(f) for f in changed_and_modified_files if f]
     deleted_files = [Path(f) for f in deleted_files if f]
 
     headers = {"Authorization": f"Bearer {access_token}"}
     publication_id = get_publication_id(publication_host, headers)
 
-    results = {"added": [], "modified": [], "deleted": []}
+    results = {
+        "input_added_files": added_files,
+        "input_changed_and_modified_files": changed_and_modified_files,
+        "input_deleted_files": deleted_files,
+        "added": [],
+        "modified": [],
+        "deleted": [],
+        "errors": [],
+    }
 
-    for file_path in added_files:
+    all_changed_files = added_files + changed_and_modified_files
+    for file_path in all_changed_files:
         if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
             results = handle_post(
                 file_path, file_path.parent, repo, branch, publication_id, headers, results, added_files
