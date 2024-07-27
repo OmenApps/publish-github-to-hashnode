@@ -59,11 +59,11 @@ def get_publication_id(host: str, headers: Dict[str, str]) -> str:
     return publication_id
 
 
-def get_post_id(publication_id: str, slug: str, headers: Dict[str, str]) -> Optional[str]:
+def get_post_id(host: str, slug: str, headers: Dict[str, str]) -> Optional[str]:
     """Get the post ID for the given publication and slug."""
     query = """
-    query GetPost($publicationId: String!, $slug: String!) {
-        publication(id: $publicationId) {
+    query GetPost($host: String!, $slug: String!) {
+        publication(host: $host) {
             post(slug: $slug) {
                 id
             }
@@ -74,7 +74,7 @@ def get_post_id(publication_id: str, slug: str, headers: Dict[str, str]) -> Opti
         HASHNODE_API_URL,
         json={
             "query": query,
-            "variables": {"publicationId": publication_id, "slug": slug},
+            "variables": {"host": host, "slug": slug},
         },
         headers=headers,
         timeout=TIMEOUT,
@@ -194,13 +194,14 @@ def handle_post(  # pylint: disable=too-many-arguments
     base_path: Path,
     repo: str,
     branch: str,
+    host: str,
     publication_id: str,
     headers: Dict[str, str],
     results: Dict[str, List[Dict[str, str]]],
     added_files: List[Path],
 ) -> None:
     """Handle a markdown post file."""
-    
+
     debug_data.append(
         f"Handling Post with args: {file_path=}, {base_path=}, {repo=}, {branch=}, "
         f"{publication_id=}, {len(headers)=}, {results=}, {added_files=}"
@@ -237,9 +238,11 @@ def handle_post(  # pylint: disable=too-many-arguments
         "settings": {"enableTableOfContent": metadata.get("enableTableOfContents", False), "slugOverridden": True},
     }
 
-    post_id = get_post_id(publication_id, metadata["slug"], headers)
+    post_id = get_post_id(host, metadata["slug"], headers)
     if post_id:
         post_data["id"] = post_id
+    debug_data.append(f"Updating Post with id: {post_id}, Post Data: {post_data}")
+
     post = create_or_update_post(post_data, headers)
     results["added" if file_path in added_files else "modified"].append(post)
     debug_data.append(f"Updated Post with id: {post_id}, Post Data: {post_data}")
@@ -323,18 +326,18 @@ def main():
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["GITHUB_REF"].split("/")[-1]
 
-    # Convert the space-separated strings to lists
+    headers = {"Authorization": f"Bearer {access_token}"}
+    publication_id = get_publication_id(publication_host, headers)
+
+    # Convert the space-separated strings to lists of Path objects
     added_files = os.environ.get("ADDED_FILES", "").split()
     added_files = [Path(f) for f in added_files if f]
 
     changed_and_modified_files = os.environ.get("CHANGED_AND_MODIFIED_FILES", "").split()
-    changed_and_modified_files = [Path(f) for f in changed_and_modified_files if f]
+    changed_and_modified_files = [Path(f) for f in changed_and_modified_files if f and f not in added_files]
 
     deleted_files = os.environ.get("DELETED_FILES", "").split()
     deleted_files = [Path(f) for f in deleted_files if f]
-
-    headers = {"Authorization": f"Bearer {access_token}"}
-    publication_id = get_publication_id(publication_host, headers)
 
     results = {
         "input_added_files": [str(f) for f in added_files],
@@ -351,7 +354,15 @@ def main():
         debug_data.append(f"Processing File: {str(file_path)}, Comparing to path {str(posts_directory)}")
         if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
             results = handle_post(
-                file_path, file_path.parent, repo, branch, publication_id, headers, results, added_files
+                file_path=file_path,
+                base_path=file_path.parent,
+                repo=repo,
+                branch=branch,
+                host=publication_host,
+                publication_id=publication_id,
+                headers=headers,
+                results=results,
+                added_files=added_files,
             )
         else:
             results["errors"].append(
