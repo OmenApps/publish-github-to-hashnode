@@ -348,7 +348,7 @@ def main():
 
     all_changed_files = added_files + changed_and_modified_files
     for file_path in all_changed_files:
-        debug_data.append(f"Processing File: {str(file_path)}")
+        debug_data.append(f"Processing File: {str(file_path)}, Comparing to path {str(posts_directory)}")
         if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
             results = handle_post(
                 file_path, file_path.parent, repo, branch, publication_id, headers, results, added_files
