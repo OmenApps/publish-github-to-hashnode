@@ -34,6 +34,8 @@ HASHNODE_API_URL = "https://gql.hashnode.com"
 GITHUB_RAW_URL = "https://raw.githubusercontent.com"
 TIMEOUT = 10
 
+debug_data = []
+
 
 def get_publication_id(host: str, headers: Dict[str, str]) -> str:
     """Get the publication ID for the given host."""
@@ -51,7 +53,9 @@ def get_publication_id(host: str, headers: Dict[str, str]) -> str:
         timeout=TIMEOUT,
     )
     response.raise_for_status()
-    return response.json()["data"]["publication"]["id"]
+    publication_id = response.json()["data"]["publication"]["id"]
+    debug_data.append(f"Publication ID: {publication_id}")
+    return publication_id
 
 
 def get_post_id(publication_id: str, slug: str, headers: Dict[str, str]) -> Optional[str]:
@@ -76,7 +80,9 @@ def get_post_id(publication_id: str, slug: str, headers: Dict[str, str]) -> Opti
     )
     response.raise_for_status()
     post = response.json()["data"]["publication"]["post"]
-    return post["id"] if post else None
+    post_id = post["id"] if post else None
+    debug_data.append(f"Slug: {slug}, Post ID: {post_id}, Post: {post}")
+    return post_id
 
 
 def create_or_update_post(post_data: Dict[str, Any], headers: Dict[str, str]) -> Dict[str, str]:
@@ -99,7 +105,9 @@ def create_or_update_post(post_data: Dict[str, Any], headers: Dict[str, str]) ->
         timeout=TIMEOUT,
     )
     response.raise_for_status()
-    return response.json()["data"]["publishPost"]["post"]
+    response_json = response.json()["data"]["publishPost"]["post"]
+    debug_data.append(f"Created or Updated Initial Post Data: {post_data}, Created or Updated Post: {response_json}")
+    return response_json
 
 
 def delete_post(post_id: str, headers: Dict[str, str]) -> bool:
@@ -118,14 +126,18 @@ def delete_post(post_id: str, headers: Dict[str, str]) -> bool:
         timeout=TIMEOUT,
     )
     response.raise_for_status()
-    return response.json()["data"]["removePost"]["success"]
+    response_json = response.json()["data"]["removePost"]["success"]
+    debug_data.append(f"Deleted Post ID: {post_id}, Success: {response_json}")
+    return response_json
 
 
 def process_markdown(file_path: Path) -> Tuple[Dict[str, Any], str]:
     """Extract metadata and content from a markdown file."""
     with file_path.open("r") as f:
         post = frontmatter.load(f)
-    return post.metadata, post.content
+    processed_markdown = post.metadata, post.content
+    debug_data.append(f"Processed Markdown: {processed_markdown}")
+    return processed_markdown
 
 
 def get_validated_frontmatter(metadata: Dict[str, Any]) -> None:
@@ -152,6 +164,7 @@ def get_validated_frontmatter(metadata: Dict[str, Any]) -> None:
     if "publishedAt" not in metadata:
         metadata["publishedAt"] = datetime.now().isoformat()
 
+    debug_data.append(f"Validated Frontmatter: {metadata}")
     return metadata
 
 
@@ -258,6 +271,15 @@ def create_result_summary(results: Dict[str, List[Dict[str, str]]]) -> str:
         summary += "Errors:\n"
         for error in results["errors"]:
             summary += f"  - {error['file']}: {error['error']}\n"
+
+    # Add debug data
+    if debug_data:
+        summary += "Debug Data:\n"
+        for data in debug_data:
+            summary += f"  - {data}\n"
+
+    if not summary:
+        summary = "No changes detected."
     return summary
 
 
