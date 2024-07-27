@@ -250,10 +250,8 @@ def write_results_to_github_output(results: Dict[str, List[Dict[str, str]]]) -> 
         print("GITHUB_OUTPUT environment variable is not set.")
         return
     with open(github_output, "a", encoding="utf-8") as output_file:
-        # print(f"result_json={json.dumps(results)}", file=output_file)
-        # print(f"result_summary={create_result_summary(results)}", file=output_file)
-        print("result_json=result_json", file=output_file)
-        print("result_summary=result_summary", file=output_file)
+        print(f"result_json={json.dumps(results)}", file=output_file)
+        print(f"result_summary={create_result_summary(results)}", file=output_file)
 
 
 def main():
