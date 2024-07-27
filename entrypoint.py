@@ -191,7 +191,7 @@ def handle_post(  # pylint: disable=too-many-arguments
     try:
         metadata = get_validated_frontmatter(metadata)
     except ValueError as e:
-        results["errors"].append({"file": file_path, "error": str(e)})
+        results["errors"].append({"file": str(file_path), "error": str(e)})
         return results
 
     content = update_image_urls(content, base_path, repo, branch)
@@ -277,9 +277,9 @@ def main():
 
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["GITHUB_REF"].split("/")[-1]
-    added_files = [Path(f) for f in added_files if f]
-    changed_and_modified_files = [Path(f) for f in changed_and_modified_files if f]
-    deleted_files = [Path(f) for f in deleted_files if f]
+    added_files = [str(Path(f)) for f in added_files if f]
+    changed_and_modified_files = [str(Path(f)) for f in changed_and_modified_files if f]
+    deleted_files = [str(Path(f)) for f in deleted_files if f]
 
     headers = {"Authorization": f"Bearer {access_token}"}
     publication_id = get_publication_id(publication_host, headers)
