@@ -200,6 +200,12 @@ def handle_post(  # pylint: disable=too-many-arguments
     added_files: List[Path],
 ) -> None:
     """Handle a markdown post file."""
+    
+    debug_data.append(
+        f"Handling Post with args: {file_path=}, {base_path=}, {repo=}, {branch=}, "
+        f"{publication_id=}, {len(headers)=}, {results=}, {added_files=}"
+    )
+
     metadata, content = process_markdown(file_path)
 
     try:
@@ -236,6 +242,7 @@ def handle_post(  # pylint: disable=too-many-arguments
         post_data["id"] = post_id
     post = create_or_update_post(post_data, headers)
     results["added" if file_path in added_files else "modified"].append(post)
+    debug_data.append(f"Updated Post with id: {post_id}, Post Data: {post_data}")
     return results
 
 
@@ -260,27 +267,31 @@ def create_result_summary(results: Dict[str, List[Dict[str, str]]]) -> str:
     """Create a summary of the results."""
     summary = ""
 
-    # Add added, modified, and deleted posts
+    # Show added, modified, and deleted posts
     for action, posts in results.items():
-        if action in ["added", "modified", "deleted"] and posts:
-            summary += f"{action.capitalize()} posts:\n"
-            for post in posts:
-                summary += f"  - {post['title']} ({post['slug']})\n"
+        if action in ["added", "modified", "deleted"]:
+            if posts:
+                summary += f"{action.capitalize()} posts:\n"
+                for post in posts:
+                    summary += f"  - {post['title']} ({post['slug']})\n"
+            else:
+                summary += f"No {action} posts.\n"
 
-    # Add errors
+    # Show errors
     if results["errors"]:
         summary += "Errors:\n"
         for error in results["errors"]:
             summary += f"  - {str(error['file'])}: {error['error']}\n"
+    else:
+        summary += "No errors.\n"
 
-    # Add debug data
+    # Show debug data
     if debug_data:
         summary += "Debug Data:\n"
         for data in debug_data:
             summary += f"  - {str(data)}\n"
-
-    if not summary:
-        summary = "No changes detected."
+    else:
+        summary += "No debug data.\n"
 
     return summary
 
@@ -309,15 +320,17 @@ def main():
     posts_directory = Path(os.environ.get("POSTS_DIRECTORY", ""))
     publication_host = os.environ["PUBLICATION_HOST"]
 
-    # Convert the space-separated strings to lists
-    added_files = os.environ.get("ADDED_FILES", "").split()
-    changed_and_modified_files = os.environ.get("CHANGED_AND_MODIFIED_FILES", "").split()
-    deleted_files = os.environ.get("DELETED_FILES", "").split()
-
     repo = os.environ["GITHUB_REPOSITORY"]
     branch = os.environ["GITHUB_REF"].split("/")[-1]
+
+    # Convert the space-separated strings to lists
+    added_files = os.environ.get("ADDED_FILES", "").split()
     added_files = [Path(f) for f in added_files if f]
+
+    changed_and_modified_files = os.environ.get("CHANGED_AND_MODIFIED_FILES", "").split()
     changed_and_modified_files = [Path(f) for f in changed_and_modified_files if f]
+
+    deleted_files = os.environ.get("DELETED_FILES", "").split()
     deleted_files = [Path(f) for f in deleted_files if f]
 
     headers = {"Authorization": f"Bearer {access_token}"}
@@ -335,13 +348,19 @@ def main():
 
     all_changed_files = added_files + changed_and_modified_files
     for file_path in all_changed_files:
+        debug_data.append(f"Processing File: {str(file_path)}")
         if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
             results = handle_post(
                 file_path, file_path.parent, repo, branch, publication_id, headers, results, added_files
             )
+        else:
+            results["errors"].append(
+                {"file": str(file_path), "error": "File is not a markdown file or not in the posts directory"}
+            )
 
     # ToDo: To implement this, we need to get the metadata from this file in the previous commit.
-    # for file_path in deleted_files:
+    for file_path in deleted_files:
+        debug_data.append(f"Deleting File: {file_path}")
     #     if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
     #         results = handle_deleted_post(file_path, publication_id, headers, results)
 
