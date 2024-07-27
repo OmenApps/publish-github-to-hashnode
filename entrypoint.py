@@ -258,44 +258,31 @@ def handle_deleted_post(
 
 def create_result_summary(results: Dict[str, List[Dict[str, str]]]) -> str:
     """Create a summary of the results."""
-    # summary = ""
+    summary = ""
 
-    # # Add added, modified, and deleted posts
-    # for action, posts in results.items():
-    #     if action in ["added", "modified", "deleted"] and posts:
-    #         summary += f"{action.capitalize()} posts:\n"
-    #         for post in posts:
-    #             summary += f"  - {post['title']} ({post['slug']})\n"
+    # Add added, modified, and deleted posts
+    for action, posts in results.items():
+        if action in ["added", "modified", "deleted"] and posts:
+            summary += f"{action.capitalize()} posts:\n"
+            for post in posts:
+                summary += f"  - {post['title']} ({post['slug']})\n"
 
-    # # Add errors
-    # if results["errors"]:
-    #     summary += "Errors:\n"
-    #     for error in results["errors"]:
-    #         summary += f"  - {str(error['file'])}: {error['error']}\n"
+    # Add errors
+    if results["errors"]:
+        summary += "Errors:\n"
+        for error in results["errors"]:
+            summary += f"  - {str(error['file'])}: {error['error']}\n"
 
-    # # Add debug data
-    # if debug_data:
-    #     summary += "Debug Data:\n"
-    #     for data in debug_data:
-    #         summary += f"  - {str(data)}\n"
+    # Add debug data
+    if debug_data:
+        summary += "Debug Data:\n"
+        for data in debug_data:
+            summary += f"  - {str(data)}\n"
 
-    # if not summary:
-    #     summary = "No changes detected."
+    if not summary:
+        summary = "No changes detected."
 
-    summary = """
-        TEST
-        TEST
-        TEST
-    """
     return summary
-
-
-def set_multiline_output(name, value):
-    with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-        delimiter = uuid.uuid1()
-        print(f'{name}<<{delimiter}', file=fh)
-        print(value, file=fh)
-        print(delimiter, file=fh)
 
 
 def write_results_to_github_output(results: Dict[str, List[Dict[str, str]]]) -> None:
