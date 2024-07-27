@@ -215,6 +215,7 @@ def handle_post(  # pylint: disable=too-many-arguments
         post_data["id"] = post_id
     post = create_or_update_post(post_data, headers)
     results["added" if file_path in added_files else "modified"].append(post)
+    return results
 
 
 def handle_deleted_post(
@@ -228,14 +229,15 @@ def handle_deleted_post(
         success = delete_post(post_id, headers)
         if success:
             results["deleted"].append({"slug": metadata["slug"]})
+    return results
 
 
 def write_results_to_github_output(results: Dict[str, List[Dict[str, str]]]) -> None:
     """Write the results to the GitHub output in two different formats."""
-    github_output_path = os.getenv("GITHUB_OUTPUT")
-    with open(github_output_path, "a", encoding="utf-8") as f:
-        f.write(f"result_json={json.dumps(results)}\n")
-        f.write(f"result_summary={json.dumps(results, indent=2)}\n")
+    github_output = os.getenv("GITHUB_OUTPUT")
+    with open(github_output, "a", encoding="utf-8") as output_file:
+        print(f"result_json={json.dumps(results)}", file=output_file)
+        print(f"result_summary={json.dumps(results, indent=2)}", file=output_file)
 
 
 def main():
@@ -262,14 +264,16 @@ def main():
 
     for file_path in added_files:
         if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
-            handle_post(file_path, file_path.parent, repo, branch, publication_id, headers, results, added_files)
+            results = handle_post(
+                file_path, file_path.parent, repo, branch, publication_id, headers, results, added_files
+            )
 
     for file_path in deleted_files:
         if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
-            handle_deleted_post(file_path, publication_id, headers, results)
+            results = handle_deleted_post(file_path, publication_id, headers, results)
 
     write_results_to_github_output(results)
 
+
 if __name__ == "__main__":
     main()
-
