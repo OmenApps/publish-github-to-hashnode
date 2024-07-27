@@ -23,6 +23,7 @@ Hashnode GraphQL API is used to interact with the Hashnode platform.
 import json
 import os
 import re
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -289,6 +290,14 @@ def create_result_summary(results: Dict[str, List[Dict[str, str]]]) -> str:
     return summary
 
 
+def set_multiline_output(name, value):
+    with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+        delimiter = uuid.uuid1()
+        print(f'{name}<<{delimiter}', file=fh)
+        print(value, file=fh)
+        print(delimiter, file=fh)
+
+
 def write_results_to_github_output(results: Dict[str, List[Dict[str, str]]]) -> None:
     """Write the results to the GitHub output in two different formats."""
     github_output = os.getenv("GITHUB_OUTPUT")
@@ -297,7 +306,14 @@ def write_results_to_github_output(results: Dict[str, List[Dict[str, str]]]) -> 
         return
     with open(github_output, "a", encoding="utf-8") as output_file:
         print(f"result_json={json.dumps(results)}", file=output_file)
-        print(f"result_summary={create_result_summary(results)}", file=output_file)
+
+        # Set multiline output
+        # See: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+        # and: https://github.com/orgs/community/discussions/28146#discussioncomment-5638014
+        delimiter = uuid.uuid1()
+        print(f'result_summary<<{delimiter}', file=output_file)
+        print(create_result_summary(results), file=output_file)
+        print(delimiter, file=output_file)
 
 
 def main():
