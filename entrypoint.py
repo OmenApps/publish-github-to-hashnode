@@ -162,7 +162,7 @@ def convert_path_to_posix(path: Union[str, Path]) -> str:
 
 def get_resource_url(repo: str, branch: str, path: Path) -> str:
     """Get the URL for a resource in a GitHub repository."""
-    return f"{GITHUB_RAW_URL}/{repo}/{branch}/{convert_path_to_posix(path)}"
+    return str(f"{GITHUB_RAW_URL}/{repo}/{branch}/{convert_path_to_posix(path)}")
 
 
 def update_image_urls(content: str, base_path: Path, repo: str, branch: str) -> str:
