@@ -6,7 +6,7 @@ This GitHub Action publishes blog posts from a GitHub repository to a specific p
 
 - Create new posts on Hashnode if they do not exist.
 - Update existing posts on Hashnode if they exist.
-- Delete posts on Hashnode if the corresponding markdown file is deleted.
+- Delists posts on Hashnode if the corresponding markdown file is not present in the current commit.
 - Handles correct linking of cover images and inline images in the markdown content.
 
 ## Inputs
@@ -52,8 +52,7 @@ jobs:
           uses: actions/publish-github-to-hashnode@v1
           with:
             added-files: ${{ steps.changed-files.outputs.added_files }}
-            changed-and-modified-files: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
-            deleted-files: ${{ steps.changed-files.outputs.deleted_files }}
+            changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
             access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
             publication-host: 'blog.mydomain.com'  # Your publication host
             posts-directory: 'content/posts'  # The directory within your repository containing the markdown files, if different from the root directory
@@ -152,8 +151,7 @@ jobs:
           uses: actions/publish-github-to-hashnode@v1
           with:
             added-files: ${{ steps.changed-files.outputs.added_files }}
-            changed-and-modified-files: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
-            deleted-files: ${{ steps.changed-files.outputs.deleted_files }}
+            changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
             access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
             publication-host: 'blog.mydomain.com'
             posts-directory: 'content/posts'

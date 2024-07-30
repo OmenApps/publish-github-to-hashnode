@@ -12,9 +12,6 @@ inputs:
   changed-files:
     description: "The list of changed files in the repository."
     required: true
-  deleted-files:
-    description: "The list of deleted files in the repository."
-    required: true
   access-token:
     description: "Your Hashnode API Personal Access Token. See: https://hashnode.com/settings/developer"
     required: true
@@ -35,17 +32,15 @@ runs:
   using: "docker"
   image: "Dockerfile"
   env:
+    ADDED_FILES: ${{ inputs.added-files }}
+    CHANGED_FILES: ${{ inputs.changed-files }}
     ACCESS_TOKEN: ${{ inputs.access-token }}
     POSTS_DIRECTORY: ${{ inputs.posts-directory }}
     PUBLICATION_HOST: ${{ inputs.publication-host }}
-    ADDED_FILES: ${{ inputs.added-files }}
-    CHANGED_FILES: ${{ inputs.changed-files }}
-    DELETED_FILES: ${{ inputs.deleted-files }}
     PYTHONUNBUFFERED: "1"
   args:
+    - ${{ inputs.added-files }}
+    - ${{ inputs.changed-files }}
     - ${{ inputs.access-token }}
     - ${{ inputs.posts-directory }}
     - ${{ inputs.publication-host }}
-    - ${{ inputs.added-files }}
-    - ${{ inputs.changed-files }}
-    - ${{ inputs.deleted-files }}
