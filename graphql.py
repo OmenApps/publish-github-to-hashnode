@@ -30,7 +30,7 @@ class HashnodeAPI:
         response = self._execute_request(query, variables={"host": PUBLICATION_HOST})
         publication_id = response["data"]["publication"]["id"]
         self.debug_data.append(
-            [datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"), f"Publication ID: {publication_id}"]
+            [datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"), f"Publication ID: {publication_id}"]
         )
         return publication_id
 
@@ -50,7 +50,7 @@ class HashnodeAPI:
         if "errors" in response:
             self.debug_data.append(
                 [
-                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
                     f"GraphQL errors: {response['errors']}, Slug: {slug}",
                 ]
             )
@@ -60,7 +60,7 @@ class HashnodeAPI:
         post_id = post["id"] if post else None
         self.debug_data.append(
             [
-                datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
                 f"Got {post_id=} for {slug=}, Post: {post if post else None}",
             ]
         )
@@ -151,7 +151,7 @@ class HashnodeAPI:
             delisted = response["data"]["updatePost"]["post"]["preferences"]["isDelisted"]
             self.debug_data.append(
                 [
-                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
                     f"Delisted post: {post_id}, Delisted: {delisted}",
                 ]
             )
@@ -173,7 +173,7 @@ class HashnodeAPI:
         except requests.exceptions.HTTPError as e:
             self.debug_data.append(
                 [
-                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
                     f"Request failed with status code {response.status_code}: {response.text}. "
                     f"{query=}, {variables=}. Original exception: {e}.",
                 ]
@@ -182,7 +182,7 @@ class HashnodeAPI:
         except requests.exceptions.RequestException as e:
             self.debug_data.append(
                 [
-                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
                     f"Request failed: {e}. {query=}, {variables=}, {response.text=}",
                 ]
             )
@@ -190,7 +190,7 @@ class HashnodeAPI:
         except Exception as e:  # pylint: disable=W0718
             self.debug_data.append(
                 [
-                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
                     f"Unexpected error: {e}. {query=}, {variables=}, {response.text=}",
                 ]
             )
@@ -203,7 +203,7 @@ class HashnodeAPI:
             post = response["data"][f"{action.split()[0].lower()}Post"]["post"]
             self.debug_data.append(
                 [
-                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
                     f"{action}: {post['id']}, {post['title']}, {post['slug']}",
                 ]
             )
@@ -216,7 +216,7 @@ class HashnodeAPI:
         """Log a failure with a given message, identifier, and response."""
         self.debug_data.append(
             [
-                datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
                 f"{message} with identifier: {identifier}. Response: {response}",
             ]
         )

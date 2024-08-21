@@ -68,7 +68,7 @@ class MarkdownFileHandler:  # pylint: disable=R0903
         with self.file_path.open("r") as f:
             post = frontmatter.load(f)
         debug_data.append(
-            [datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"), f"Processing Markdown: {self.file_path}"]
+            [datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"), f"Processing Markdown: {self.file_path}"]
         )
         return post.metadata, post.content
 
@@ -93,7 +93,7 @@ class MarkdownFileHandler:  # pylint: disable=R0903
         self.metadata["publishedAt"] = self._get_publish_date(self.metadata.get("publishedAt"))
 
         debug_data.append(
-            [datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"), f"Processed Metadata: {self.metadata}"]
+            [datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"), f"Processed Metadata: {self.metadata}"]
         )
 
     def _generate_slug(self, title: str) -> str:
@@ -164,7 +164,7 @@ def get_markdown_files(directory: Path) -> List[Path]:
 
 def handle_post(file_path: Path, api: HashnodeAPI) -> None:
     """Handle a markdown post file."""
-    debug_data.append([datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"), f"Handling file: {file_path}"])
+    debug_data.append([datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"), f"Handling file: {file_path}"])
 
     markdown_file_handler = MarkdownFileHandler(file_path, api.publication_id)
     post_data = markdown_file_handler.build_post_data()
@@ -172,7 +172,7 @@ def handle_post(file_path: Path, api: HashnodeAPI) -> None:
     post_id = api.get_post_id(markdown_file_handler.metadata["slug"])
     debug_data.append(
         [
-            datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+            datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
             f"Got Post ID: {post_id} for slug: {markdown_file_handler.metadata['slug']}",
         ]
     )
@@ -187,7 +187,7 @@ def handle_post(file_path: Path, api: HashnodeAPI) -> None:
 
     debug_data.append(
         [
-            datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+            datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
             f"Post Action: {post_action}, Post: {post}, for file: {file_path}",
         ]
     )
