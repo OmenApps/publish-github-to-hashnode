@@ -207,12 +207,14 @@ class HashnodeAPI:
                 ]
             )
             post = response["data"][f"{action.split()[0].lower()}Post"]["post"]
+
             self.debug_data.append(
                 [
                     datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
-                    f"{action}: {post.get('id')=}, {post.get('title')=}, {post.get('slug')=}",
+                    f"{action}: {post['id']=}, {post['title']=}, {post['slug']=}",
                 ]
             )
+
             return post
         except KeyError:
             self._log_failure(f"Failed to {action.lower()}", post_data, response)
