@@ -170,6 +170,13 @@ def handle_post(file_path: Path, api: HashnodeAPI) -> None:
     post_data = markdown_file_handler.build_post_data()
 
     post_id = api.get_post_id(markdown_file_handler.metadata["slug"])
+    debug_data.append(
+        [
+            datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+            f"Got Post ID: {post_id} for slug: {markdown_file_handler.metadata['slug']}",
+        ]
+    )
+
     post_action = "update_post" if post_id else "create_post"
 
     post = getattr(api, post_action)(post_data)

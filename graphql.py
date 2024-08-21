@@ -46,12 +46,22 @@ class HashnodeAPI:
         }
         """
         response = self._execute_request(query, variables={"host": PUBLICATION_HOST, "slug": slug})
+
+        if "errors" in response:
+            self.debug_data.append(
+                [
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    f"GraphQL errors: {response['errors']}, Slug: {slug}",
+                ]
+            )
+            return None
+
         post = response["data"]["publication"].get("post")
         post_id = post["id"] if post else None
         self.debug_data.append(
             [
                 datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
-                f"Slug: {slug}, Post ID: {post_id}, Post: {post if post else None}",
+                f"Got {post_id=} for {slug=}, Post: {post if post else None}",
             ]
         )
         return post_id
@@ -102,7 +112,7 @@ class HashnodeAPI:
         }
         """
         response = self._execute_request(mutation, variables={"input": post_data})
-        return self._extract_post_data(response, "Created Post", post_data)
+        return self._extract_post_data(response, "Create Post", post_data)
 
     def update_post(self, post_data: Dict[str, Any]) -> Dict[str, str]:
         """Update a post with the given data."""
@@ -118,7 +128,7 @@ class HashnodeAPI:
         }
         """
         response = self._execute_request(mutation, variables={"input": post_data})
-        return self._extract_post_data(response, "Updated Post", post_data)
+        return self._extract_post_data(response, "Update Post", post_data)
 
     def delist_post(self, post_id: str) -> bool:
         """Delist (soft-delete) the post with the given ID."""
