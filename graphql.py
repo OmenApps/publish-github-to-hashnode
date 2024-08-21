@@ -127,19 +127,24 @@ class HashnodeAPI:
             updatePost(input: $input) {
                 post {
                     id
-                    settings {
+                    preferences {
                         delisted
                     }
                 }
             }
         }
         """
-        post_data = {"id": post_id, "settings": {"delisted": True}}
+        post_data = {"id": post_id, "preferences": {"delisted": True}}
         response = self._execute_request(mutation, variables={"input": post_data})
 
         try:
-            delisted = response["data"]["updatePost"]["post"]["settings"]["delisted"]
-            self.debug_data.append([datetime.now(ZoneInfo("UTC")), f"Delisted post: {post_id}, Delisted: {delisted}"])
+            delisted = response["data"]["updatePost"]["post"]["preferences"]["delisted"]
+            self.debug_data.append(
+                [
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    f"Delisted post: {post_id}, Delisted: {delisted}",
+                ]
+            )
             return delisted
         except KeyError:
             self._log_failure("Failed to delist post", post_id, response)
