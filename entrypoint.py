@@ -219,7 +219,11 @@ def build_full_debug_data(api: HashnodeAPI) -> None:
     """Combine debug_data with api.debug_data, and sort by timestamp."""
     debug_data.extend(api.debug_data)
     debug_data.sort(key=lambda x: x[0])
-    results["debug_data"] = debug_data
+
+    # debug_list is a list of lists. Convert each internal list to a string.
+    simplified_debug_data = [[str(item) for item in debug_list] for debug_list in debug_data]
+
+    results["debug_data"] = simplified_debug_data
 
 
 def main() -> None:
