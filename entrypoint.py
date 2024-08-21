@@ -110,7 +110,7 @@ class MarkdownFileHandler:  # pylint: disable=R0903
         """Return the publish date, defaulting to now if not provided."""
         if published_at:
             return published_at
-        return datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S")
+        return datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def build_post_data(self) -> Dict[str, Any]:
         """Build the post data for the Hashnode API."""
