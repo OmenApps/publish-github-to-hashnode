@@ -294,8 +294,8 @@ def main():
             results["errors"].append(
                 {
                     "file": str(file_path),
-                    "Note": (
-                        "File is not a markdown file or not in the posts directory. "
+                    "error": (
+                        "Note: File is not a markdown file or not in the posts directory. "
                         "If you want to publish this file, move it to the posts directory."
                     ),
                 }
