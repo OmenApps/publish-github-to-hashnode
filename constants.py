@@ -1,5 +1,4 @@
-"""
-This file contains the constants used in the application.
+"""This file contains the constants used in the application.
 
 ACCESS_TOKEN, POSTS_DIRECTORY, PUBLICATION_HOST, GITHUB_REPOSITORY, and BRANCH are read from the environment variables.
 

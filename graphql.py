@@ -1,6 +1,4 @@
-"""
-Provides a class to manage the publication of markdown posts to a Hashnode publication.
-"""
+"""Provides a class to manage the publication of markdown posts to a Hashnode publication."""
 
 from typing import Any, Dict, List, Optional
 
@@ -130,9 +128,14 @@ class HashnodeAPI:
             timeout=self.timeout,
         )
         response.raise_for_status()
-        response_json = response.json()["data"]["publishPost"]["post"]
-        self.debug_data.append(f"Created Post - Data: {post_data}, Post: {response_json}")
-        return response_json
+
+        try:
+            response_json = response.json()["data"]["publishPost"]["post"]
+            self.debug_data.append(f"Created Post - Data: {post_data}, Post: {response_json}")
+            return response_json
+        except KeyError:
+            self.debug_data.append("Failed to create post with data: %s. Response: %s", post_data, response.json())
+            return {}
 
     def update_post(self, post_data: Dict[str, Any]) -> Dict[str, str]:
         """Update a post with the given data."""
@@ -154,9 +157,14 @@ class HashnodeAPI:
             timeout=self.timeout,
         )
         response.raise_for_status()
-        response_json = response.json()["data"]["updatePost"]["post"]
-        self.debug_data.append(f"Updated Post - Data: {post_data}, Post: {response_json}")
-        return response_json
+
+        try:
+            response_json = response.json()["data"]["updatePost"]["post"]
+            self.debug_data.append(f"Updated Post - Data: {post_data}, Post: {response_json}")
+            return response_json
+        except KeyError:
+            self.debug_data.append("Failed to update post with data: %s. Response: %s", post_data, response.json())
+            return {}
 
     def delist_post(self, post_id: str) -> bool:
         """Update the post settings to delist the post with the given ID."""
@@ -180,6 +188,10 @@ class HashnodeAPI:
             timeout=self.timeout,
         )
         response.raise_for_status()
-        response_json = response.json()["data"]["updatePost"]["post"]
-        self.debug_data.append(f"Delisted Post - ID: {post_id}, Post: {response_json}")
-        return response_json["settings"]["delisted"]
+        try:
+            response_json = response.json()["data"]["updatePost"]["post"]
+            self.debug_data.append(f"Delisted Post - ID: {post_id}, Post: {response_json}")
+            return response_json["settings"]["delisted"]
+        except KeyError:
+            self.debug_data.append("Failed to delist post with id: %s. Response: %s", post_id, response.json())
+            return False

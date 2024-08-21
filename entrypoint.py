@@ -1,5 +1,4 @@
-"""
-Publish markdown post files to Hashnode publications.
+"""Publish markdown post files to Hashnode publications.
 
 The script is designed to be used as part of a GitHub Action. It reads the following
 environment variables:
@@ -21,7 +20,6 @@ Hashnode GraphQL API is used to interact with the Hashnode platform.
 """
 
 import json
-import os
 import re
 import uuid
 from datetime import datetime
@@ -193,6 +191,8 @@ def handle_post(  # pylint: disable=too-many-arguments
     if post_id:
         post_data["id"] = post_id
         post = api.update_post(post_data)
+        if not post:
+            return
         debug_data.append(api.debug_data)
         results["modified"].append(post)
         debug_data.append(f"Updated Post with id: {post_id}, Post Data: {post_data}")
@@ -200,6 +200,8 @@ def handle_post(  # pylint: disable=too-many-arguments
     # Otherwise, create a new post.
     else:
         post = api.create_post(post_data)
+        if not post:
+            return
         debug_data.append(api.debug_data)
         results["added"].append(post)
         debug_data.append(f"Created Post with id: {post_id}, Post Data: {post_data}")
@@ -228,8 +230,9 @@ def handle_deleted_posts() -> None:
     # Compare the slugs of the posts to the slugs of the files
     for post in posts:
         if post["slug"] not in slugs:
-            api.delist_post(post["id"])
-            results["deleted"].append(post)
+            delisted = api.delist_post(post["id"])
+            if delisted:
+                results["deleted"].append(post)
 
 
 def create_result_summary() -> str:
@@ -289,7 +292,13 @@ def main():
             handle_post(file_path=file_path)
         else:
             results["errors"].append(
-                {"file": str(file_path), "error": "File is not a markdown file or not in the posts directory"}
+                {
+                    "file": str(file_path),
+                    "Note": (
+                        "File is not a markdown file or not in the posts directory. "
+                        "If you want to publish this file, move it to the posts directory."
+                    ),
+                }
             )
 
     write_results_to_github_output()
