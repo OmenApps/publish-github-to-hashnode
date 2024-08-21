@@ -41,7 +41,7 @@ from constants import (
 )
 from graphql import HashnodeAPI
 
-debug_data: List[str] = []
+debug_data: List[List[datetime, str]] = []
 results: Dict[str, Any] = {
     "input_added_files": [str(f) for f in ADDED_FILES],
     "input_files": [str(f) for f in CHANGED_FILES],
@@ -67,7 +67,7 @@ class MarkdownFileHandler:  # pylint: disable=R0903
         """Extract metadata and content from a markdown file."""
         with self.file_path.open("r") as f:
             post = frontmatter.load(f)
-        debug_data.append(f"Processed Markdown: {post.metadata}")
+        debug_data.append([datetime.now(ZoneInfo("UTC")), f"Processing Markdown: {self.file_path}"])
         return post.metadata, post.content
 
     def _validate(self) -> None:
@@ -90,7 +90,7 @@ class MarkdownFileHandler:  # pylint: disable=R0903
         self.metadata["tags"] = self._process_tags(self.metadata.get("tags", ""))
         self.metadata["publishedAt"] = self._get_publish_date(self.metadata.get("publishedAt"))
 
-        debug_data.append(f"Validated Frontmatter: {self.metadata}")
+        debug_data.append([datetime.now(ZoneInfo("UTC")), f"Processed Metadata: {self.metadata}"])
 
     def _generate_slug(self, title: str) -> str:
         """Generate a slug from the title."""
@@ -158,11 +158,10 @@ def get_markdown_files(directory: Path) -> List[Path]:
     return list(directory.rglob("*.md"))
 
 
-def handle_post(file_path: Path) -> None:
+def handle_post(file_path: Path, api: HashnodeAPI) -> None:
     """Handle a markdown post file."""
-    debug_data.append(f"Handling Post for file: {file_path}")
+    debug_data.append([datetime.now(ZoneInfo("UTC")), f"Handling file: {file_path}"])
 
-    api = HashnodeAPI()
     markdown_file_handler = MarkdownFileHandler(file_path, api.publication_id)
     post_data = markdown_file_handler.build_post_data()
 
@@ -175,7 +174,10 @@ def handle_post(file_path: Path) -> None:
     else:
         results["errors"].append({"file": str(file_path), "error": f"Failed to {post_action} post."})
 
-    debug_data.append(f"Completed {post_action} for file: {file_path}")
+    debug_data.append(
+        [datetime.now(ZoneInfo("UTC")), f"Post Action: {post_action}, Post: {post}, for file: {file_path}"]
+    )
+    return api
 
 
 def handle_deleted_posts(api: HashnodeAPI) -> None:
@@ -188,6 +190,8 @@ def handle_deleted_posts(api: HashnodeAPI) -> None:
         if post["slug"] not in slugs:
             if api.delist_post(post["id"]):
                 results["deleted"].append(post)
+
+    return api
 
 
 def create_result_summary() -> str:
@@ -211,6 +215,13 @@ def write_results_to_github_output() -> None:
         print(delimiter, file=output_file)
 
 
+def build_full_debug_data(api: HashnodeAPI) -> None:
+    """Combine debug_data with api.debug_data, and sort by timestamp."""
+    debug_data.extend(api.debug_data)
+    debug_data.sort(key=lambda x: x[0])
+    results["debug_data"] = debug_data
+
+
 def main() -> None:
     """Main entrypoint for the action."""
     api = HashnodeAPI()
@@ -218,7 +229,7 @@ def main() -> None:
 
     for file_path in ALL_CHANGED_FILES:
         if file_path.is_relative_to(posts_directory) and file_path.suffix == ".md":
-            handle_post(file_path=file_path)
+            api = handle_post(file_path=file_path, api=api)
         else:
             results["errors"].append(
                 {
@@ -230,7 +241,10 @@ def main() -> None:
                 }
             )
 
-    handle_deleted_posts(api)
+    api = handle_deleted_posts(api)
+
+    build_full_debug_data(api)
+
     write_results_to_github_output()
 
 

@@ -1,6 +1,8 @@
 """Provides a class to manage the publication of markdown posts to a Hashnode publication."""
 
+from datetime import datetime
 from typing import Any, Dict, List, Optional
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -13,7 +15,7 @@ class HashnodeAPI:
     def __init__(self, timeout: int = 30) -> None:
         """Initialize the HashnodeAPI class with a timeout and obtain the publication ID."""
         self.timeout = timeout
-        self.debug_data: List[str] = []
+        self.debug_data: List[List[datetime, str]] = []
         self.publication_id = self._fetch_publication_id()
 
     def _fetch_publication_id(self) -> str:
@@ -27,7 +29,7 @@ class HashnodeAPI:
         """
         response = self._execute_request(query, variables={"host": PUBLICATION_HOST})
         publication_id = response["data"]["publication"]["id"]
-        self.debug_data.append(f"Publication ID: {publication_id}")
+        self.debug_data.append([datetime.now(ZoneInfo("UTC")), f"Publication ID: {publication_id}"])
         return publication_id
 
     def get_post_id(self, slug: str) -> Optional[str]:
@@ -44,7 +46,9 @@ class HashnodeAPI:
         response = self._execute_request(query, variables={"host": PUBLICATION_HOST, "slug": slug})
         post = response["data"]["publication"].get("post")
         post_id = post["id"] if post else None
-        self.debug_data.append(f"Slug: {slug}, Post ID: {post_id}, Post: {post}")
+        self.debug_data.append(
+            [datetime.now(ZoneInfo("UTC")), f"Slug: {slug}, Post ID: {post_id}, Post: {post if post else None}"]
+        )
         return post_id
 
     def get_all_publication_posts(self) -> List[Dict[str, str]]:
@@ -130,7 +134,7 @@ class HashnodeAPI:
 
         try:
             delisted = response["data"]["updatePost"]["post"]["settings"]["delisted"]
-            self.debug_data.append(f"Delisted Post - ID: {post_id}, Delisted: {delisted}")
+            self.debug_data.append([datetime.now(ZoneInfo("UTC")), f"Delisted post: {post_id}, Delisted: {delisted}"])
             return delisted
         except KeyError:
             self._log_failure("Failed to delist post", post_id, response)
@@ -148,8 +152,11 @@ class HashnodeAPI:
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             self.debug_data.append(
-                f"Request failed with status code {response.status_code}: {response.text}. "
-                f"{query=}, {variables=}. Original exception: {e}."
+                [
+                    datetime.now(ZoneInfo("UTC")),
+                    f"Request failed with status code {response.status_code}: {response.text}. "
+                    f"{query=}, {variables=}. Original exception: {e}.",
+                ]
             )
             return {}
         return response.json()
@@ -158,7 +165,9 @@ class HashnodeAPI:
         """Extract post data from the response and handle errors."""
         try:
             post = response["data"][f"{action.split()[0].lower()}Post"]["post"]
-            self.debug_data.append(f"{action} - Data: {post_data}, Post: {post}")
+            self.debug_data.append(
+                [datetime.now(ZoneInfo("UTC")), f"{action}: {post['id']}, {post['title']}, {post['slug']}"]
+            )
             return post
         except KeyError:
             self._log_failure(f"Failed to {action.lower()}", post_data, response)
@@ -166,4 +175,6 @@ class HashnodeAPI:
 
     def _log_failure(self, message: str, identifier: str, response: Dict[str, Any]) -> None:
         """Log a failure with a given message, identifier, and response."""
-        self.debug_data.append(f"{message} with identifier: {identifier}. Response: {response}")
+        self.debug_data.append(
+            [datetime.now(ZoneInfo("UTC")), f"{message} with identifier: {identifier}. Response: {response}"]
+        )
