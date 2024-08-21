@@ -208,12 +208,15 @@ class HashnodeAPI:
             )
             post = response["data"][f"{action.split()[0].lower()}Post"]["post"]
 
-            self.debug_data.append(
-                [
-                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
-                    f"{action}: {post['id']=}, {post['title']=}, {post['slug']=}",
-                ]
-            )
+            if post:
+                self.debug_data.append(
+                    [
+                        datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
+                        f"{action}: {post['id']=}, {post['title']=}, {post['slug']=}",
+                    ]
+                )
+            else:
+                self._log_failure(f"Failed to {action.lower()} (No Post was returned in response)", post_data, response)
 
             return post
         except KeyError:
