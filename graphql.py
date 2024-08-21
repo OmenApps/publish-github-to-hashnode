@@ -201,8 +201,10 @@ class HashnodeAPI:
         """Extract post data from the response and handle errors."""
         try:
             self.debug_data.append(
-                datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
-                f"Trying to get 'response[\"data\"]{action.split()[0].lower()}Post']['post']' for the post.",
+                [
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
+                    f"Trying to get 'response[\"data\"]{action.split()[0].lower()}Post']['post']' for the post.",
+                ]
             )
             post = response["data"][f"{action.split()[0].lower()}Post"]["post"]
             self.debug_data.append(
