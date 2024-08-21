@@ -67,7 +67,9 @@ class MarkdownFileHandler:  # pylint: disable=R0903
         """Extract metadata and content from a markdown file."""
         with self.file_path.open("r") as f:
             post = frontmatter.load(f)
-        debug_data.append([datetime.now(ZoneInfo("UTC")), f"Processing Markdown: {self.file_path}"])
+        debug_data.append(
+            [datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"), f"Processing Markdown: {self.file_path}"]
+        )
         return post.metadata, post.content
 
     def _validate(self) -> None:
@@ -90,7 +92,9 @@ class MarkdownFileHandler:  # pylint: disable=R0903
         self.metadata["tags"] = self._process_tags(self.metadata.get("tags", ""))
         self.metadata["publishedAt"] = self._get_publish_date(self.metadata.get("publishedAt"))
 
-        debug_data.append([datetime.now(ZoneInfo("UTC")), f"Processed Metadata: {self.metadata}"])
+        debug_data.append(
+            [datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"), f"Processed Metadata: {self.metadata}"]
+        )
 
     def _generate_slug(self, title: str) -> str:
         """Generate a slug from the title."""
@@ -106,7 +110,7 @@ class MarkdownFileHandler:  # pylint: disable=R0903
         """Return the publish date, defaulting to now if not provided."""
         if published_at:
             return published_at
-        return datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
+        return datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%dT%H:%M:%SZ")
 
     def build_post_data(self) -> Dict[str, Any]:
         """Build the post data for the Hashnode API."""
@@ -160,7 +164,7 @@ def get_markdown_files(directory: Path) -> List[Path]:
 
 def handle_post(file_path: Path, api: HashnodeAPI) -> None:
     """Handle a markdown post file."""
-    debug_data.append([datetime.now(ZoneInfo("UTC")), f"Handling file: {file_path}"])
+    debug_data.append([datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"), f"Handling file: {file_path}"])
 
     markdown_file_handler = MarkdownFileHandler(file_path, api.publication_id)
     post_data = markdown_file_handler.build_post_data()
@@ -175,7 +179,10 @@ def handle_post(file_path: Path, api: HashnodeAPI) -> None:
         results["errors"].append({"file": str(file_path), "error": f"Failed to {post_action} post."})
 
     debug_data.append(
-        [datetime.now(ZoneInfo("UTC")), f"Post Action: {post_action}, Post: {post}, for file: {file_path}"]
+        [
+            datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+            f"Post Action: {post_action}, Post: {post}, for file: {file_path}",
+        ]
     )
     return api
 

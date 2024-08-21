@@ -29,7 +29,9 @@ class HashnodeAPI:
         """
         response = self._execute_request(query, variables={"host": PUBLICATION_HOST})
         publication_id = response["data"]["publication"]["id"]
-        self.debug_data.append([datetime.now(ZoneInfo("UTC")), f"Publication ID: {publication_id}"])
+        self.debug_data.append(
+            [datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"), f"Publication ID: {publication_id}"]
+        )
         return publication_id
 
     def get_post_id(self, slug: str) -> Optional[str]:
@@ -47,7 +49,10 @@ class HashnodeAPI:
         post = response["data"]["publication"].get("post")
         post_id = post["id"] if post else None
         self.debug_data.append(
-            [datetime.now(ZoneInfo("UTC")), f"Slug: {slug}, Post ID: {post_id}, Post: {post if post else None}"]
+            [
+                datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                f"Slug: {slug}, Post ID: {post_id}, Post: {post if post else None}",
+            ]
         )
         return post_id
 
@@ -153,7 +158,7 @@ class HashnodeAPI:
         except requests.exceptions.HTTPError as e:
             self.debug_data.append(
                 [
-                    datetime.now(ZoneInfo("UTC")),
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
                     f"Request failed with status code {response.status_code}: {response.text}. "
                     f"{query=}, {variables=}. Original exception: {e}.",
                 ]
@@ -166,7 +171,10 @@ class HashnodeAPI:
         try:
             post = response["data"][f"{action.split()[0].lower()}Post"]["post"]
             self.debug_data.append(
-                [datetime.now(ZoneInfo("UTC")), f"{action}: {post['id']}, {post['title']}, {post['slug']}"]
+                [
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    f"{action}: {post['id']}, {post['title']}, {post['slug']}",
+                ]
             )
             return post
         except KeyError:
@@ -176,5 +184,8 @@ class HashnodeAPI:
     def _log_failure(self, message: str, identifier: str, response: Dict[str, Any]) -> None:
         """Log a failure with a given message, identifier, and response."""
         self.debug_data.append(
-            [datetime.now(ZoneInfo("UTC")), f"{message} with identifier: {identifier}. Response: {response}"]
+            [
+                datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                f"{message} with identifier: {identifier}. Response: {response}",
+            ]
         )
