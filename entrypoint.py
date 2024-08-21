@@ -116,27 +116,49 @@ class MarkdownFileHandler:  # pylint: disable=R0903
         """Build the post data for the Hashnode API."""
         self._update_image_urls()
 
-        post_data = {
-            "title": self.metadata["title"],
-            "subtitle": self.metadata.get("subtitle"),
-            "publicationId": self.publication_id,
-            "contentMarkdown": self.content,
-            "publishedAt": self.metadata["publishedAt"],
-            "coverImageOptions": {
-                "coverImageURL": self._get_cover_image_url(),
-                "coverImageAttribution": self.metadata.get("coverImageAttribution"),
-            },
-            "slug": self.metadata["slug"],
-            "tags": self.metadata["tags"],
-            "settings": {
-                "enableTableOfContent": self.metadata.get("enableTableOfContents", False),
-                "delisted": self.metadata.get("delisted", False),
-                "slugOverridden": True,
-            },
-        }
-
+        # If updating
         if post_id:
-            post_data["id"] = post_id
+            post_data = {
+                "id": post_id,
+                "title": self.metadata["title"],
+                "subtitle": self.metadata.get("subtitle"),
+                "publicationId": self.publication_id,
+                "contentMarkdown": self.content,
+                "publishedAt": self.metadata["publishedAt"],
+                "coverImageOptions": {
+                    "coverImageURL": self._get_cover_image_url(),
+                    "coverImageAttribution": self.metadata.get("coverImageAttribution"),
+                },
+                "slug": self.metadata["slug"],
+                "tags": self.metadata["tags"],
+                "settings": {  # UpdatePostSettingsInput
+                    "isTableOfContentEnabled": self.metadata.get("enableTableOfContents", False),
+                    "delisted": self.metadata.get("delisted", False),
+                    "disableComments": self.metadata.get("disableComments", False),
+                },
+            }
+
+        # If creating
+        else:
+            post_data = {
+                "title": self.metadata["title"],
+                "subtitle": self.metadata.get("subtitle"),
+                "publicationId": self.publication_id,
+                "contentMarkdown": self.content,
+                "publishedAt": self.metadata["publishedAt"],
+                "coverImageOptions": {
+                    "coverImageURL": self._get_cover_image_url(),
+                    "coverImageAttribution": self.metadata.get("coverImageAttribution"),
+                },
+                "slug": self.metadata["slug"],
+                "tags": self.metadata["tags"],
+                "settings": {  # PublishPostSettingsInput
+                    "enableTableOfContent": self.metadata.get("enableTableOfContents", False),
+                    "delisted": self.metadata.get("delisted", False),
+                    "slugOverridden": True,
+                },
+                "disableComments": self.metadata.get("disableComments", False),
+            }
 
         return post_data
 

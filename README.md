@@ -87,6 +87,7 @@ Full list of frontmatter fields that can be used in the markdown files:
 - `coverImage` (optional): Cover image relative path within the repository starting from `posts-directory` (as specified in pubish.yml) if provided.
 - `coverImageAttribution`: Information about the cover image attribution (optional)
 - `publishedAt`: Date and time when the post was published (optional)
+- `disableComments` (optional, default: false): Disable comments on the post.
 
 #### Example Frontmatter
 
