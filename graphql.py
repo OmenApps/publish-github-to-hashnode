@@ -164,6 +164,22 @@ class HashnodeAPI:
                 ]
             )
             return {}
+        except requests.exceptions.RequestException as e:
+            self.debug_data.append(
+                [
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    f"Request failed: {e}. {query=}, {variables=}, {response.text=}",
+                ]
+            )
+            return {}
+        except Exception as e:  # pylint: disable=W0718
+            self.debug_data.append(
+                [
+                    datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
+                    f"Unexpected error: {e}. {query=}, {variables=}, {response.text=}",
+                ]
+            )
+            return {}
         return response.json()
 
     def _extract_post_data(self, response: Dict[str, Any], action: str, post_data: Dict[str, Any]) -> Dict[str, str]:
