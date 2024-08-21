@@ -10,17 +10,14 @@ from constants import HASHNODE_API_URL, HEADERS, PUBLICATION_HOST
 class HashnodeAPI:
     """Manage the publication of markdown posts to a Hashnode publication."""
 
-    def __init__(
-        self,
-        timeout: int = 30,
-    ):
-        """Initialize the HashnodeAPI class."""
+    def __init__(self, timeout: int = 30) -> None:
+        """Initialize the HashnodeAPI class with a timeout and obtain the publication ID."""
         self.timeout = timeout
-        self.debug_data = []
-        self.publication_id = self._get_publication_id()
+        self.debug_data: List[str] = []
+        self.publication_id = self._fetch_publication_id()
 
-    def _get_publication_id(self) -> str:
-        """Get the publication ID for the given host."""
+    def _fetch_publication_id(self) -> str:
+        """Fetch the publication ID for the given host."""
         query = """
         query Publication($host: String!) {
             publication(host: $host) {
@@ -28,14 +25,8 @@ class HashnodeAPI:
             }
         }
         """
-        response = requests.post(
-            url=HASHNODE_API_URL,
-            json={"query": query, "variables": {"host": PUBLICATION_HOST}},
-            headers=HEADERS,
-            timeout=self.timeout,
-        )
-        response.raise_for_status()
-        publication_id = response.json()["data"]["publication"]["id"]
+        response = self._execute_request(query, variables={"host": PUBLICATION_HOST})
+        publication_id = response["data"]["publication"]["id"]
         self.debug_data.append(f"Publication ID: {publication_id}")
         return publication_id
 
@@ -50,17 +41,8 @@ class HashnodeAPI:
             }
         }
         """
-        response = requests.post(
-            url=HASHNODE_API_URL,
-            json={
-                "query": query,
-                "variables": {"host": PUBLICATION_HOST, "slug": slug},
-            },
-            headers=HEADERS,
-            timeout=self.timeout,
-        )
-        response.raise_for_status()
-        post = response.json()["data"]["publication"]["post"]
+        response = self._execute_request(query, variables={"host": PUBLICATION_HOST, "slug": slug})
+        post = response["data"]["publication"].get("post")
         post_id = post["id"] if post else None
         self.debug_data.append(f"Slug: {slug}, Post ID: {post_id}, Post: {post}")
         return post_id
@@ -85,26 +67,15 @@ class HashnodeAPI:
             }
         }
         """
-        variables = {
-            "host": PUBLICATION_HOST,
-            "first": 50,
-            "after": None,
-        }
-
         all_posts = []
-        has_next_page = True
-        while has_next_page:
-            response = requests.post(
-                url=HASHNODE_API_URL,
-                json={"query": query, "variables": variables},
-                headers=HEADERS,
-                timeout=self.timeout,
-            )
-            response.raise_for_status()
-            data = response.json()["data"]["publication"]["posts"]
-            all_posts.extend([{"id": edge["node"]["id"], "slug": edge["node"]["slug"]} for edge in data["edges"]])
-            has_next_page = data["pageInfo"]["hasNextPage"]
-            variables["after"] = data["pageInfo"]["endCursor"]
+        variables = {"host": PUBLICATION_HOST, "first": 50}
+        while True:
+            response = self._execute_request(query, variables=variables)
+            posts_data = response["data"]["publication"]["posts"]
+            all_posts.extend({"id": edge["node"]["id"], "slug": edge["node"]["slug"]} for edge in posts_data["edges"])
+            if not posts_data["pageInfo"]["hasNextPage"]:
+                break
+            variables["after"] = posts_data["pageInfo"]["endCursor"]
 
         return all_posts
 
@@ -121,21 +92,8 @@ class HashnodeAPI:
             }
         }
         """
-        response = requests.post(
-            url=HASHNODE_API_URL,
-            json={"query": mutation, "variables": {"input": post_data}},
-            headers=HEADERS,
-            timeout=self.timeout,
-        )
-        response.raise_for_status()
-
-        try:
-            response_json = response.json()["data"]["publishPost"]["post"]
-            self.debug_data.append(f"Created Post - Data: {post_data}, Post: {response_json}")
-            return response_json
-        except KeyError:
-            self.debug_data.append("Failed to create post with data: %s. Response: %s", post_data, response.json())
-            return {}
+        response = self._execute_request(mutation, variables={"input": post_data})
+        return self._extract_post_data(response, "Created Post", post_data)
 
     def update_post(self, post_data: Dict[str, Any]) -> Dict[str, str]:
         """Update a post with the given data."""
@@ -150,24 +108,11 @@ class HashnodeAPI:
             }
         }
         """
-        response = requests.post(
-            url=HASHNODE_API_URL,
-            json={"query": mutation, "variables": {"input": post_data}},
-            headers=HEADERS,
-            timeout=self.timeout,
-        )
-        response.raise_for_status()
-
-        try:
-            response_json = response.json()["data"]["updatePost"]["post"]
-            self.debug_data.append(f"Updated Post - Data: {post_data}, Post: {response_json}")
-            return response_json
-        except KeyError:
-            self.debug_data.append("Failed to update post with data: %s. Response: %s", post_data, response.json())
-            return {}
+        response = self._execute_request(mutation, variables={"input": post_data})
+        return self._extract_post_data(response, "Updated Post", post_data)
 
     def delist_post(self, post_id: str) -> bool:
-        """Update the post settings to delist the post with the given ID."""
+        """Delist (soft-delete) the post with the given ID."""
         mutation = """
         mutation UpdatePost($input: UpdatePostInput!) {
             updatePost(input: $input) {
@@ -181,17 +126,36 @@ class HashnodeAPI:
         }
         """
         post_data = {"id": post_id, "settings": {"delisted": True}}
+        response = self._execute_request(mutation, variables={"input": post_data})
+        try:
+            delisted = response["data"]["updatePost"]["post"]["settings"]["delisted"]
+            self.debug_data.append(f"Delisted Post - ID: {post_id}, Delisted: {delisted}")
+            return delisted
+        except KeyError:
+            self._log_failure("Failed to delist post", post_id, response)
+            return False
+
+    def _execute_request(self, query: str, variables: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute a GraphQL request and return the JSON response."""
         response = requests.post(
             url=HASHNODE_API_URL,
-            json={"query": mutation, "variables": {"input": post_data}},
+            json={"query": query, "variables": variables},
             headers=HEADERS,
             timeout=self.timeout,
         )
         response.raise_for_status()
+        return response.json()
+
+    def _extract_post_data(self, response: Dict[str, Any], action: str, post_data: Dict[str, Any]) -> Dict[str, str]:
+        """Extract post data from the response and handle errors."""
         try:
-            response_json = response.json()["data"]["updatePost"]["post"]
-            self.debug_data.append(f"Delisted Post - ID: {post_id}, Post: {response_json}")
-            return response_json["settings"]["delisted"]
+            post = response["data"][f"{action.split()[0].lower()}Post"]["post"]
+            self.debug_data.append(f"{action} - Data: {post_data}, Post: {post}")
+            return post
         except KeyError:
-            self.debug_data.append("Failed to delist post with id: %s. Response: %s", post_id, response.json())
-            return False
+            self._log_failure(f"Failed to {action.lower()}", post_data, response)
+            return {}
+
+    def _log_failure(self, message: str, identifier: str, response: Dict[str, Any]) -> None:
+        """Log a failure with a given message, identifier, and response."""
+        self.debug_data.append(f"{message} with identifier: {identifier}. Response: {response}")
