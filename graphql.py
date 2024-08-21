@@ -68,7 +68,7 @@ class HashnodeAPI:
         }
         """
         all_posts = []
-        variables = {"host": PUBLICATION_HOST, "first": 50}
+        variables = {"host": PUBLICATION_HOST, "first": 50, "after": None}
         while True:
             response = self._execute_request(query, variables=variables)
             posts_data = response["data"]["publication"]["posts"]
@@ -127,6 +127,7 @@ class HashnodeAPI:
         """
         post_data = {"id": post_id, "settings": {"delisted": True}}
         response = self._execute_request(mutation, variables={"input": post_data})
+
         try:
             delisted = response["data"]["updatePost"]["post"]["settings"]["delisted"]
             self.debug_data.append(f"Delisted Post - ID: {post_id}, Delisted: {delisted}")
@@ -143,7 +144,14 @@ class HashnodeAPI:
             headers=HEADERS,
             timeout=self.timeout,
         )
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            self.debug_data.append(
+                f"Request failed with status code {response.status_code}: {response.text}. "
+                f"{query=}, {variables=}. Original exception: {e}."
+            )
+            return {}
         return response.json()
 
     def _extract_post_data(self, response: Dict[str, Any], action: str, post_data: Dict[str, Any]) -> Dict[str, str]:
