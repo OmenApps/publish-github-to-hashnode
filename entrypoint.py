@@ -53,7 +53,7 @@ results = {
 }
 
 
-class MarkdownFileHandler:
+class MarkdownFileHandler:  # pylint: disable=R0903
     """Handle markdown files."""
 
     def __init__(self, file_path: Path, publication_id: str) -> None:
@@ -61,6 +61,8 @@ class MarkdownFileHandler:
         self.publication_id = publication_id
         self.base_path = file_path.parent
         self.metadata, self.content = self._process_markdown()
+
+        self._validate_content()
 
         try:
             self._validate_frontmatter()
@@ -75,6 +77,11 @@ class MarkdownFileHandler:
         processed_markdown = post.metadata, post.content
         debug_data.append(f"Processed Markdown: {processed_markdown}")
         return processed_markdown
+
+    def _validate_content(self) -> None:
+        """Validate that the content is not empty."""
+        if not self.content.strip():
+            raise ValueError("Content cannot be empty")
 
     def _validate_frontmatter(self) -> None:
         """Validate that the frontmatter contains the required fields."""
@@ -135,7 +142,7 @@ class MarkdownFileHandler:
             "title": self.metadata["title"],
             "subtitle": self.metadata.get("subtitle"),
             "publicationId": publication_id,
-            "contentMarkdown": self.metadata["contentMarkdown"],
+            "contentMarkdown": self.content,
             "publishedAt": self.metadata["publishedAt"],
             "coverImageOptions": {
                 "coverImageURL": self.metadata.get("coverImage"),
