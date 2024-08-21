@@ -195,14 +195,36 @@ def handle_deleted_posts(api: HashnodeAPI) -> None:
 
 
 def create_result_summary() -> str:
-    """Create a summary of the results for output."""
-    summary = "\n".join(
-        f"{action.capitalize()} posts:\n" + "\n".join(f"  - {post['title']} ({post['slug']})" for post in posts)
-        for action, posts in results.items()
-        if action in ["added", "modified", "deleted"] and posts
-    )
-    errors = "\n".join(f"  - {error['file']}: {error['error']}" for error in results["errors"])
-    return f"{summary}\n\nErrors:\n{errors}\n" if errors else f"{summary}\n\nNo errors.\n"
+    """Create a text summary of the results."""
+    summary = ""
+
+    # Show added, modified, and deleted posts
+    for action, posts in results.items():
+        if action in ["added", "modified", "deleted"]:
+            if posts:
+                summary += f"{action.capitalize()} posts:\n"
+                for post in posts:
+                    summary += f"  - {post['title']} ({post['slug']})\n"
+            else:
+                summary += f"No {action} posts.\n"
+
+    # Show errors
+    if results["errors"]:
+        summary += "Errors:\n"
+        for error in results["errors"]:
+            summary += f"  - {str(error['file'])}: {error['error']}\n"
+    else:
+        summary += "No errors.\n"
+
+    # Show debug data
+    if results["debug_data"]:
+        summary += "Debug Data:\n"
+        for data in debug_data:
+            summary += f"  - {str(data)}\n"
+    else:
+        summary += "No debug data.\n"
+
+    return summary
 
 
 def write_results_to_github_output() -> None:
