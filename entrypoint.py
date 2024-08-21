@@ -112,11 +112,11 @@ class MarkdownFileHandler:  # pylint: disable=R0903
             return published_at
         return datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    def build_post_data(self) -> Dict[str, Any]:
+    def build_post_data(self, post_id: str = None) -> Dict[str, Any]:
         """Build the post data for the Hashnode API."""
         self._update_image_urls()
 
-        return {
+        post_data = {
             "title": self.metadata["title"],
             "subtitle": self.metadata.get("subtitle"),
             "publicationId": self.publication_id,
@@ -134,6 +134,11 @@ class MarkdownFileHandler:  # pylint: disable=R0903
                 "slugOverridden": True,
             },
         }
+
+        if post_id:
+            post_data["id"] = post_id
+
+        return post_data
 
     def _update_image_urls(self) -> None:
         """Update relative image URLs in the content to absolute URLs."""
@@ -167,7 +172,6 @@ def handle_post(file_path: Path, api: HashnodeAPI) -> None:
     debug_data.append([datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"), f"Handling file: {file_path}"])
 
     markdown_file_handler = MarkdownFileHandler(file_path, api.publication_id)
-    post_data = markdown_file_handler.build_post_data()
 
     post_id = api.get_post_id(markdown_file_handler.metadata["slug"])
     debug_data.append(
@@ -176,6 +180,8 @@ def handle_post(file_path: Path, api: HashnodeAPI) -> None:
             f"Got Post ID: {post_id} for slug: {markdown_file_handler.metadata['slug']}",
         ]
     )
+
+    post_data = markdown_file_handler.build_post_data(post_id)
 
     post_action = "update_post" if post_id else "create_post"
 
