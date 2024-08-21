@@ -12,14 +12,15 @@ This GitHub Action publishes blog posts from a GitHub repository to a specific p
 ## Inputs
 
 - `access-token` (required): Your Hashnode API Personal Access Token. See: [Hashnode Developer Settings](https://hashnode.com/settings/developer)
-- `changed-files` (required): The list of changed files in the repository, provided by the `tj-actions/changed-files` action.
+- `added-files` (required): The list of added files in the repository, automatically provided by the `tj-actions/changed-files` action in the examples below.
+- `changed-files` (required): The list of changed files in the repository, automatically provided by the `tj-actions/changed-files` action in the examples below.
 - `publication-host` (required): The publication host (e.g., `blog.mydomain.com`).
-- `posts-directory` (optional): The local directory containing the blog posts, if different from the root directory. Default: `posts`
+- `posts-directory` (optional): The local directory in this repo containing the blog posts, if different from the root directory. Default: `.`. Example: `content/posts`.
 
 ## Outputs
 
-- `result_json`: Publish result as a JSON string.
-- `result_summary`: Publish result summary formatted as text.
+- `result_json`: Publishes result as a JSON string.
+- `result_summary`: Publishes result summary formatted as text.
 
 ## Usage
 
@@ -51,11 +52,11 @@ jobs:
         - name: Publish to Hashnode
           uses: actions/publish-github-to-hashnode@v1
           with:
-            added-files: ${{ steps.changed-files.outputs.added_files }}
-            changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
+            added-files: ${{ steps.changed-files.outputs.added_files }}  # Uses output from changed-files action
+            changed-files: ${{ steps.changed-files.outputs.all_changed_files }}  # Uses output from changed-files action
             access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
             publication-host: 'blog.mydomain.com'  # Your publication host
-            posts-directory: 'content/posts'  # The directory within your repository containing the markdown files, if different from the root directory
+            posts-directory: 'content/posts'  # Dir within your repo containing the markdown files, if different from root dir
 ```
 
 ### 2. Store your Hashnode API Access Token as a GitHub Secret
@@ -162,7 +163,7 @@ jobs:
 
 ## Development
 
-To contribute to the development of this action, clone the repository and submit a pull request.
+To contribute to the development of this action, clone the repository, make your changes, and submit a pull request. Please ensure you submit a detailed Issue describing the work you are planning to do prior to submitting a PR.
 
 ## License
 
