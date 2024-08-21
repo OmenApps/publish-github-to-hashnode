@@ -1,7 +1,7 @@
 """Provides a class to manage the publication of markdown posts to a Hashnode publication."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from zoneinfo import ZoneInfo
 
 import requests
@@ -15,7 +15,7 @@ class HashnodeAPI:
     def __init__(self, timeout: int = 30) -> None:
         """Initialize the HashnodeAPI class with a timeout and obtain the publication ID."""
         self.timeout = timeout
-        self.debug_data: List[List[datetime, str]] = []
+        self.debug_data: List[List[Union[datetime, str]]] = []
         self.publication_id = self._fetch_publication_id()
 
     def _fetch_publication_id(self) -> str:

@@ -41,7 +41,7 @@ from constants import (
 )
 from graphql import HashnodeAPI
 
-debug_data: List[List[datetime, str]] = []
+debug_data: List[List[Union[datetime, str]]] = []
 results: Dict[str, Any] = {
     "input_added_files": [str(f) for f in ADDED_FILES],
     "input_files": [str(f) for f in CHANGED_FILES],
