@@ -128,17 +128,17 @@ class HashnodeAPI:
                 post {
                     id
                     preferences {
-                        delisted
+                        isDelisted
                     }
                 }
             }
         }
         """
-        post_data = {"id": post_id, "preferences": {"delisted": True}}
+        post_data = {"id": post_id, "preferences": {"isDelisted": True}}
         response = self._execute_request(mutation, variables={"input": post_data})
 
         try:
-            delisted = response["data"]["updatePost"]["post"]["preferences"]["delisted"]
+            delisted = response["data"]["updatePost"]["post"]["preferences"]["isDelisted"]
             self.debug_data.append(
                 [
                     datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S"),
