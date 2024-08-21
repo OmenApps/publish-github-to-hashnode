@@ -61,7 +61,7 @@ class HashnodeAPI:
         self.debug_data.append(
             [
                 datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
-                f"Got {post_id=} for {slug=}, Post: {post if post else None}",
+                f"Got post id {post_id} for {slug}, Post: {post if post else None}",
             ]
         )
         return post_id
