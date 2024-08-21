@@ -183,7 +183,7 @@ class HashnodeAPI:
             self.debug_data.append(
                 [
                     datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
-                    f"Request failed: {e}. {query=}, {variables=}, {response.text=}",
+                    f"Request failed with {response.text=}: {e}. {query=}, {variables=}.",
                 ]
             )
             return {}
@@ -191,7 +191,7 @@ class HashnodeAPI:
             self.debug_data.append(
                 [
                     datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
-                    f"Unexpected error: {e}. {query=}, {variables=}, {response.text=}",
+                    f"Unexpected error {response.text=}: {e}. {query=}, {variables=}.",
                 ]
             )
             return {}
@@ -217,6 +217,6 @@ class HashnodeAPI:
         self.debug_data.append(
             [
                 datetime.now(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M:%S:%f"),
-                f"{message} with identifier: {identifier}. Response: {response}",
+                f"{message}. {response=}. Tried using identifier: {identifier}.",
             ]
         )
