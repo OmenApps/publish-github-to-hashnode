@@ -6,11 +6,11 @@ from pathlib import Path
 
 from sgqlc.operation import Operation
 
-from schema import Query
 from src.exceptions import HashnodePublisherError
 from src.graphql_client import GraphQLClient
 from src.markdown_processor import MarkdownProcessor
 from src.post_service import PostService
+from src.schema import Query
 from src.settings import settings
 
 logging.basicConfig(level=logging.INFO)

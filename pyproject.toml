@@ -1,6 +1,6 @@
 [project]
 name = "publish-github-to-hashnode"
-version = "1.48"
+version = "1.49"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
