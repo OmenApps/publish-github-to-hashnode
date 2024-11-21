@@ -1,0 +1,12 @@
+[project]
+name = "publish-github-to-hashnode"
+version = "1.48"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pydantic-settings>=2.6.1",
+    "python-frontmatter>=1.1.0",
+    "requests>=2.32.3",
+    "sgqlc>=16.4",
+]

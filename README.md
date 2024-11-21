@@ -1,175 +1,189 @@
 # Publish GitHub to Hashnode GitHub Action
 
-This GitHub Action publishes blog posts from a GitHub repository to a specific publication on Hashnode. It reads markdown files, processes the frontmatter and content, and uses the Hashnode API to create, update, or delete posts.
+A powerful GitHub Action that seamlessly publishes blog posts from your GitHub repository to Hashnode publications. This action handles markdown files with frontmatter, processes content, and manages posts through Hashnode's GraphQL API.
 
-## Features
+## 🌟 Key Features
 
-- Create new posts on Hashnode if they do not exist.
-- Update existing posts on Hashnode if they exist.
-- Delists posts on Hashnode if the corresponding markdown file is not present in the current commit.
-- Handles correct linking of cover images and inline images in the markdown content.
+- **Automated Publishing**: Create and update posts on Hashnode directly from your GitHub repository
+- **Smart Updates**: Only processes changed files, minimizing API calls
+- **Image Handling**: Automatically processes both cover images and inline images
+- **Post Management**: Handles creation, updates, and delisting of posts
+- **Frontmatter Support**: Rich metadata support through YAML frontmatter
+- **Debug Output**: Comprehensive debugging information for troubleshooting
 
-## Inputs
+## 📋 Prerequisites
 
-- `access-token` (required): Your Hashnode API Personal Access Token. See: [Hashnode Developer Settings](https://hashnode.com/settings/developer)
-- `added-files` (required): The list of added files in the repository, automatically provided by the `tj-actions/changed-files` action in the examples below.
-- `changed-files` (required): The list of changed files in the repository, automatically provided by the `tj-actions/changed-files` action in the examples below.
-- `publication-host` (required): The publication host (e.g., `blog.mydomain.com`).
-- `posts-directory` (optional): The local directory in this repo containing the blog posts, if different from the root directory. Default: `.`. Example: `content/posts`.
+- A Hashnode account and publication
+- A GitHub repository containing your markdown posts
+- A Hashnode Personal Access Token
 
-## Outputs
+## 🔧 Installation
 
-- `result_json`: Publishes result as a JSON string.
-- `result_summary`: Publishes result summary formatted as text.
+### 1. Set Up GitHub Secrets
 
-## Usage
+1. Go to your repository's Settings → Secrets and Variables → Actions
+2. Create a new secret `HASHNODE_ACCESS_TOKEN` with your Hashnode API token
+   ```
+   Name: HASHNODE_ACCESS_TOKEN
+   Value: your_hashnode_api_token
+   ```
 
-### 1. Create a `.github/workflows/publish.yml` file
+### 2. Create Workflow File
 
-Create a new workflow file in your repository to define the steps required to publish the posts.
+Create `.github/workflows/publish.yml`:
 
 ```yaml
-name: Publish My Hashnode Blog Posts
+name: Publish to Hashnode
 on:
   push:
+    branches:
+      - main
+    paths:
+      - 'content/posts/**'
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-        - uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-        - name: Get changed files
-          id: changed-files
-          uses: tj-actions/changed-files@v44
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
 
-        - uses: actions/setup-python@v5
-          with:
-            python-version: '3.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
-        - name: Publish to Hashnode
-          uses: actions/publish-github-to-hashnode@v1
-          with:
-            added-files: ${{ steps.changed-files.outputs.added_files }}  # Uses output from changed-files action
-            changed-files: ${{ steps.changed-files.outputs.all_changed_files }}  # Uses output from changed-files action
-            access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
-            publication-host: 'blog.mydomain.com'  # Your publication host
-            posts-directory: 'content/posts'  # Dir within your repo containing the markdown files, if different from root dir
+      - name: Publish to Hashnode
+        uses: actions/publish-github-to-hashnode@v1
+        with:
+          added-files: ${{ steps.changed-files.outputs.added_files }}
+          changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
+          access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
+          publication-host: 'blog.mydomain.com'
+          posts-directory: 'content/posts'
 ```
 
-### 2. Store your Hashnode API Access Token as a GitHub Secret
+## 📝 Post Format
 
-1. Obtain your Hashnode API Personal Access Token. See: [Hashnode Developer Settings](https://hashnode.com/settings/developer)
-2. Go to your repository on GitHub.
-3. Click on `Settings`.
-4. Scroll down to `Secrets and variables` and click on `Actions`.
-5. Click `New repository secret`.
-6. Add a new secret with the name `HASHNODE_ACCESS_TOKEN` and your Hashnode API token as the value.
+### Directory Structure
+```
+your-repo/
+├── content/
+│   └── posts/
+│       ├── my-first-post.md
+│       └── images/
+│           └── cover.jpg
+└── .github/
+    └── workflows/
+        └── publish.yml
+```
 
-### 3. Prepare your repository structure
-
-Ensure your repository contains the markdown files you wish to publish in the specified directory (default is the root of the repository).
-
-### 4. Markdown Post Frontmatter
-
-#### Frontmatter Fields
-
-Full list of frontmatter fields that can be used in the markdown files:
-
-- `title` (required): Title of the post.
-- `subtitle` (optional): Subtitle of the post.
-- `slug` (required): Slug of the post.
-- `tags` (optional): Tags of the post (comma-separated).
-- `enableTableOfContents` (optional, default: false): Enable table of contents.
-- `publish` (optional, default: true): Should the post be published at this time.
-- `coverImage` (optional): Cover image relative path within the repository starting from `posts-directory` (as specified in pubish.yml) if provided.
-- `coverImageAttribution`: Information about the cover image attribution (optional)
-- `publishedAt`: Date and time when the post was published (optional)
-- `disableComments` (optional, default: false): Disable comments on the post.
-
-#### Example Frontmatter
-
+### Markdown Format
 ```markdown
 ---
-title: Creating Spaghetti in Docker Compose
-slug: creating-spaghetti-in-docker-compose
-tags: docker,docker-compose
+title: My Awesome Post
+subtitle: A detailed guide to awesomeness
+slug: my-awesome-post
+tags: javascript,webdev,tutorial
 enableTableOfContents: true
 coverImage: images/cover.jpg
+coverImageAttribution: Photo by Author
+publishedAt: 2024-03-20T10:00:00Z
+disableComments: false
 ---
 
-## Introduction
-
-This is an introduction to creating spaghetti in Docker Compose.
-
-## Ingredients
-
-- Docker Engine
-- Spaghetti
-- Sauce
-- Cheese
-- Love
-
-## Steps
-
-1. ...
-2. ...
-3. ...
+Your post content here...
 ```
 
-### 5. Handling Image URLs
+### Frontmatter Fields Reference
 
-The action will automatically convert relative image URLs to absolute URLs that point to the raw content on GitHub. Ensure your image paths in the markdown are correct relative paths.
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| title | Yes | string | Post title |
+| slug | Yes | string | URL slug for the post |
+| subtitle | No | string | Post subtitle |
+| tags | No | string | Comma-separated list of tags |
+| enableTableOfContents | No | boolean | Enable/disable TOC |
+| coverImage | No | string | Path to cover image |
+| coverImageAttribution | No | string | Attribution for cover image |
+| publishedAt | No | string | ISO 8601 datetime |
+| disableComments | No | boolean | Disable comments |
 
-## Example Workflow Using `result_json`
+## 🔄 Workflow
 
-You can utilize the `result_json` output in subsequent steps to get the result of the publish operation in json format. The approach below can also be used with `result_summary` for a text summary.
+1. Create/edit markdown files in your repository
+2. Commit and push changes
+3. GitHub Action automatically:
+   - Detects changed files
+   - Processes markdown content
+   - Updates images to use absolute URLs
+   - Creates/updates posts on Hashnode
+   - Provides detailed output of operations
+
+## 📊 Outputs
+
+### JSON Output
+```json
+{
+  "added": [{
+    "id": "post123",
+    "title": "New Post",
+    "slug": "new-post"
+  }],
+  "modified": [{
+    "id": "post456",
+    "title": "Updated Post",
+    "slug": "updated-post"
+  }],
+  "deleted": [],
+  "errors": []
+}
+```
+
+### Using Outputs in Workflow
 
 ```yaml
-name: Publish My Hashnode Blog Posts
-on:
-  push:
+- name: Publish to Hashnode
+  id: publish
+  uses: actions/publish-github-to-hashnode@v1
+  # ... inputs ...
 
-jobs:
-    publish:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
-
-        - name: Get changed files
-          id: changed-files
-          uses: tj-actions/changed-files@v44
-        
-        - uses: actions/setup-python@v5
-          with:
-            python-version: '3.x'
-                
-        - name: Publish to Hashnode
-          id: publish
-          uses: actions/publish-github-to-hashnode@v1
-          with:
-            added-files: ${{ steps.changed-files.outputs.added_files }}
-            changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
-            access-token: ${{ secrets.HASHNODE_ACCESS_TOKEN }}
-            publication-host: 'blog.mydomain.com'
-            posts-directory: 'content/posts'
-        
-        - name: Get the output JSON
-          run: echo "${{ steps.publish.outputs.result_json }}"
+- name: Process Results
+  run: |
+    echo "Published posts: ${{ fromJSON(steps.publish.outputs.result_json).added }}"
+    echo "Summary: ${{ steps.publish.outputs.result_summary }}"
 ```
 
-## Development
+## 🔍 Debugging
 
-To contribute to the development of this action, clone the repository, make your changes, and submit a pull request. Please ensure you submit a detailed Issue describing the work you are planning to do prior to submitting a PR.
+Enable debug logs by setting repository secret:
+```
+ACTIONS_STEP_DEBUG=true
+```
 
-## License
+View detailed logs in GitHub Actions run.
 
-This project is licensed under the MIT License.
+## 🤝 Contributing
 
-## Questions and Support
+1. Fork the repository
+2. Create a feature branch
+3. Submit a Pull Request
 
-If you have any questions or need support, please open an issue in the GitHub repository. I will do my best to help.
+Please check existing issues and create a new one before submitting PRs.
+
+## 📜 License
+
+MIT License - see [LICENSE](LICENSE) for details
+
+## 🆘 Support
+
+- Create an issue for bugs/features
+
+## 🔗 Resources
+
+- [Hashnode API Documentation](https://api.hashnode.com)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
