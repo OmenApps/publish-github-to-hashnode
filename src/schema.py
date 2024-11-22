@@ -331,28 +331,28 @@ class Mutation(sgqlc.types.Type):
         "restore_post",
     )
     publish_post = sgqlc.types.Field(
-        sgqlc.types.non_null("PublishPostPayload"),
+        sgqlc.types.non_null("PublishPostPayload",),
         graphql_name="publishPost",
         args=sgqlc.types.ArgDict(
             (("input", sgqlc.types.Arg(sgqlc.types.non_null(PublishPostInput), graphql_name="input", default=None)),)
         ),
     )
     update_post = sgqlc.types.Field(
-        sgqlc.types.non_null("UpdatePostPayload"),
+        sgqlc.types.non_null("UpdatePostPayload",),
         graphql_name="updatePost",
         args=sgqlc.types.ArgDict(
             (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdatePostInput), graphql_name="input", default=None)),)
         ),
     )
     remove_post = sgqlc.types.Field(
-        sgqlc.types.non_null("RemovePostPayload"),
+        sgqlc.types.non_null("RemovePostPayload",),
         graphql_name="removePost",
         args=sgqlc.types.ArgDict(
             (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemovePostInput), graphql_name="input", default=None)),)
         ),
     )
     restore_post = sgqlc.types.Field(
-        sgqlc.types.non_null("RestorePostPayload"),
+        sgqlc.types.non_null("RestorePostPayload",),
         graphql_name="restorePost",
         args=sgqlc.types.ArgDict(
             (("input", sgqlc.types.Arg(sgqlc.types.non_null(RestorePostInput), graphql_name="input", default=None)),)
@@ -394,7 +394,7 @@ class PostCoverImage(sgqlc.types.Type):
 
 class PostFeatures(sgqlc.types.Type):
     __schema__ = schema
-    __field_names__ = ("table_of_contents")
+    __field_names__ = ("table_of_contents",)
     table_of_contents = sgqlc.types.Field(
         sgqlc.types.non_null("TableOfContentsFeature"), graphql_name="tableOfContents"
     )
@@ -735,7 +735,7 @@ class Publication(sgqlc.types.Type, Node):
         ),
     )
     series_list = sgqlc.types.Field(
-        sgqlc.types.non_null("SeriesConnection"),
+        sgqlc.types.non_null("SeriesConnection",),
         graphql_name="seriesList",
         args=sgqlc.types.ArgDict(
             (
@@ -745,7 +745,7 @@ class Publication(sgqlc.types.Type, Node):
         ),
     )
     posts = sgqlc.types.Field(
-        sgqlc.types.non_null("PublicationPostConnection"),
+        sgqlc.types.non_null("PublicationPostConnection",),
         graphql_name="posts",
         args=sgqlc.types.ArgDict(
             (
@@ -756,7 +756,7 @@ class Publication(sgqlc.types.Type, Node):
         ),
     )
     posts_via_page = sgqlc.types.Field(
-        sgqlc.types.non_null("PublicationPostPageConnection"),
+        sgqlc.types.non_null("PublicationPostPageConnection",),
         graphql_name="postsViaPage",
         args=sgqlc.types.ArgDict(
             (
