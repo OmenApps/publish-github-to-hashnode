@@ -326,7 +326,6 @@ class Mutation(sgqlc.types.Type):
     __schema__ = schema
     __field_names__ = (
         "publish_post",
-        "add_post_to_series",
         "update_post",
         "remove_post",
         "restore_post",
@@ -506,11 +505,8 @@ class PublicationLinks(sgqlc.types.Type):
 class Query(sgqlc.types.Type):
     __schema__ = schema
     __field_names__ = (
-        "top_commenters",
-        "me",
         "tag",
         "publication",
-        "feed",
         "post",
         "search_posts_of_publication",
     )
@@ -632,7 +628,6 @@ class Post(sgqlc.types.Type, Node):
         "reaction_count",
         "response_count",
         "featured",
-        "contributors",
         "bookmarked",
         "content",
         "featured_at",
@@ -692,7 +687,6 @@ class Publication(sgqlc.types.Type, Node):
         "about",
         "url",
         "canonical_url",
-        "author",
         "favicon",
         "header_color",
         "integrations",
@@ -710,16 +704,12 @@ class Publication(sgqlc.types.Type, Node):
         "pinned_post",
         "post",
         "redirected_post",
-        "og_meta_data",
-        "features",
         "static_page",
         "static_pages",
         "is_git_hub_backup_enabled",
         "is_github_as_source_connected",
         "url_pattern",
         "has_badges",
-        "sponsorship",
-        "allow_contributor_edits",
     )
     title = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="title")
     display_title = sgqlc.types.Field(String, graphql_name="displayTitle")
@@ -814,7 +804,6 @@ class Publication(sgqlc.types.Type, Node):
     )
     url_pattern = sgqlc.types.Field(sgqlc.types.non_null(UrlPattern), graphql_name="urlPattern")
     has_badges = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="hasBadges")
-    allow_contributor_edits = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="allowContributorEdits")
 
 
 # class ReadTimeFeature(sgqlc.types.Type, Feature):
