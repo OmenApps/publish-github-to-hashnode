@@ -394,7 +394,7 @@ class PostCoverImage(sgqlc.types.Type):
 
 class PostFeatures(sgqlc.types.Type):
     __schema__ = schema
-    __field_names__ = ("table_of_contents", "badges")
+    __field_names__ = ("table_of_contents")
     table_of_contents = sgqlc.types.Field(
         sgqlc.types.non_null("TableOfContentsFeature"), graphql_name="tableOfContents"
     )
